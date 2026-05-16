@@ -25,15 +25,18 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .product-card .card-img{overflow:hidden;}
 .product-card .card-img img{width:100%;height:260px;object-fit:cover;transition:transform 0.45s ease;}
 .product-card:hover .card-img img{transform:scale(1.1);}
-.btn-outline{color:#e94560;border:2px solid #e94560;background:transparent;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:background 0.2s;letter-spacing:0.03em;}
+.btn-outline{color:#e94560;border:2px solid #e94560;background:transparent;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:background 0.2s;}
 .btn-outline:hover{background:rgba(233,69,96,0.08);}
-.btn-solid{background:#e94560;color:#fff;border:2px solid #e94560;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:background 0.2s;letter-spacing:0.03em;}
+.btn-solid{background:#e94560;color:#fff;border:2px solid #e94560;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:background 0.2s;}
 .btn-solid:hover{background:#c73550;border-color:#c73550;}
 .filter-pill{border:2px solid #e94560;color:#e94560;background:transparent;padding:8px 22px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
 .filter-pill.active,.filter-pill:hover{background:#e94560;color:#fff;}
-.hero-section{position:relative;min-height:100vh;display:flex;align-items:center;background:url('hero.jpg') center/cover no-repeat;}
-.hero-section::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(26,26,46,0.82) 40%,rgba(233,69,96,0.2) 100%);}
+
+/* Hero — dynamic background via JS */
+#hero{position:relative;min-height:100vh;display:flex;align-items:center;background:#1a1a2e center/cover no-repeat;}
+#hero::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(26,26,46,0.84) 40%,rgba(233,69,96,0.18) 100%);}
 .hero-content{position:relative;z-index:2;}
+
 #cartSidebar{position:fixed;top:0;right:-480px;width:100%;max-width:450px;height:100%;background:#fff;z-index:9999;box-shadow:-8px 0 40px rgba(0,0,0,0.18);transition:right 0.4s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;}
 #cartSidebar.open{right:0;}
 #cartOverlay{position:fixed;inset:0;background:rgba(26,26,46,0.5);z-index:9998;display:none;}
@@ -64,7 +67,6 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:12px;}
 .skeleton-dark{background:linear-gradient(90deg,#2a2a3e 25%,#3a3a4e 50%,#2a2a3e 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:16px;}
 @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-/* Gallery */
 .gallery-item{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;}
 .gallery-item img{width:100%;height:220px;object-fit:cover;transition:transform 0.5s;}
 .gallery-item:hover img{transform:scale(1.1);}
@@ -72,7 +74,6 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .gallery-item:hover .g-overlay{background:rgba(233,69,96,0.35);}
 .gallery-item .g-icon{opacity:0;transition:opacity 0.3s;color:#fff;font-size:28px;}
 .gallery-item:hover .g-icon{opacity:1;}
-/* Instagram */
 .insta-item{position:relative;border-radius:12px;overflow:hidden;display:block;}
 .insta-item img{width:100%;height:200px;object-fit:cover;transition:transform 0.4s;}
 .insta-item:hover img{transform:scale(1.08);}
@@ -82,25 +83,107 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .insta-item:hover .i-icon{opacity:1;}
 .empty-state{text-align:center;padding:60px 20px;color:#9ca3af;}
 .empty-state i{font-size:48px;margin-bottom:16px;display:block;}
+
+/* ── AUTH MODAL ── */
+#authModal{position:fixed;inset:0;background:rgba(26,26,46,0.7);z-index:20000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+#authModal.open{opacity:1;pointer-events:auto;}
+.auth-box{background:#fff;border-radius:20px;width:100%;max-width:420px;overflow:hidden;transform:scale(0.95);transition:transform 0.3s;}
+#authModal.open .auth-box{transform:scale(1);}
+.auth-tabs{display:flex;border-bottom:2px solid #f3f4f6;}
+.auth-tab{flex:1;padding:14px;text-align:center;font-weight:700;font-size:14px;cursor:pointer;color:#9ca3af;border-bottom:3px solid transparent;transition:all 0.2s;margin-bottom:-2px;}
+.auth-tab.active{color:#e94560;border-bottom-color:#e94560;}
+.auth-body{padding:28px;}
+.auth-inp{width:100%;border:2px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-family:'Montserrat',sans-serif;font-size:14px;margin-bottom:14px;outline:none;transition:border-color 0.2s;}
+.auth-inp:focus{border-color:#e94560;}
+.auth-btn{width:100%;background:#e94560;color:#fff;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Montserrat',sans-serif;transition:background 0.2s;}
+.auth-btn:hover{background:#c73550;}
+.auth-btn:disabled{background:#d1d5db;cursor:not-allowed;}
+.auth-err{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:12px;border-radius:8px;padding:9px 13px;margin-bottom:12px;display:none;}
+.auth-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:12px;border-radius:8px;padding:9px 13px;margin-bottom:12px;display:none;}
+
+/* ── USER BUTTON in header ── */
+.user-btn{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:50px;padding:7px 14px 7px 7px;cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif;transition:background 0.2s;}
+.user-btn:hover{background:rgba(255,255,255,0.2);}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:#e94560;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;}
+.user-menu{position:absolute;top:50px;right:0;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.15);min-width:180px;overflow:hidden;display:none;z-index:200;}
+.user-menu.open{display:block;}
+.user-menu-item{padding:12px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#374151;transition:background 0.15s;}
+.user-menu-item:hover{background:#f9fafb;}
+.user-menu-item i{width:16px;text-align:center;color:#9ca3af;}
 </style>
 </head>
 <body>
 
+<!-- TOAST -->
 <div id="toast"><i class="fa-solid fa-bag-shopping mr-2"></i><span id="toastMsg">Added!</span></div>
 
-<!-- HEADER -->
+<!-- ═══════════ AUTH MODAL ═══════════ -->
+<div id="authModal">
+  <div class="auth-box">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Create Account</div>
+    </div>
+    <!-- Login -->
+    <div class="auth-body" id="authLoginBody">
+      <p style="font-size:13px;color:#6b7280;margin-bottom:20px;">Sign in to place your order. It's quick and free!</p>
+      <div id="loginErr" class="auth-err"></div>
+      <div id="loginOk"  class="auth-ok"></div>
+      <input type="email"    id="authEmail" class="auth-inp" placeholder="Email address">
+      <input type="password" id="authPass"  class="auth-inp" placeholder="Password" onkeydown="if(event.key==='Enter')signIn()">
+      <button class="auth-btn" id="signInBtn" onclick="signIn()">Sign In</button>
+      <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:14px;cursor:pointer;" onclick="showForgotPw()">Forgot password?</p>
+      <button onclick="closeAuthModal()" style="width:100%;background:none;border:none;color:#9ca3af;font-size:13px;margin-top:8px;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancel</button>
+    </div>
+    <!-- Signup -->
+    <div class="auth-body" id="authSignupBody" style="display:none;">
+      <p style="font-size:13px;color:#6b7280;margin-bottom:20px;">Create a free account to track your orders easily.</p>
+      <div id="signupErr" class="auth-err"></div>
+      <div id="signupOk"  class="auth-ok"></div>
+      <input type="email"    id="suEmail" class="auth-inp" placeholder="Email address">
+      <input type="password" id="suPass"  class="auth-inp" placeholder="Password (min 6 chars)" onkeydown="if(event.key==='Enter')signUp()">
+      <button class="auth-btn" id="signUpBtn" onclick="signUp()">Create Account</button>
+      <button onclick="closeAuthModal()" style="width:100%;background:none;border:none;color:#9ca3af;font-size:13px;margin-top:12px;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HEADER ═══════════ -->
 <header id="mainHeader">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href=""><span style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;letter-spacing:2px;">Sole<span style="color:#e94560;">Stride</span></span></a>
     <nav class="hidden md:flex items-center gap-8">
-      <a href="#products" class="text-white/80 hover:text-white text-sm font-medium transition">Shop</a>
+      <a href="#products"   class="text-white/80 hover:text-white text-sm font-medium transition">Shop</a>
       <a href="#categories" class="text-white/80 hover:text-white text-sm font-medium transition">Categories</a>
-      <a href="#story" class="text-white/80 hover:text-white text-sm font-medium transition">Our Story</a>
-      <a href="#gallery" class="text-white/80 hover:text-white text-sm font-medium transition">Gallery</a>
-      <a href="#reviews" class="text-white/80 hover:text-white text-sm font-medium transition">Reviews</a>
-      <a href="#faq" class="text-white/80 hover:text-white text-sm font-medium transition">FAQ</a>
+      <a href="#story"      class="text-white/80 hover:text-white text-sm font-medium transition">Our Story</a>
+      <a href="#gallery"    class="text-white/80 hover:text-white text-sm font-medium transition">Gallery</a>
+      <a href="#reviews"    class="text-white/80 hover:text-white text-sm font-medium transition">Reviews</a>
+      <a href="#faq"        class="text-white/80 hover:text-white text-sm font-medium transition">FAQ</a>
     </nav>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+      <!-- USER AUTH BUTTON -->
+      <div style="position:relative;" id="userBtnWrap">
+        <!-- Logged out -->
+        <button id="signInHeaderBtn" class="user-btn" onclick="openAuthModal('login')" style="display:flex;">
+          <div class="user-avatar"><i class="fa-solid fa-user" style="font-size:11px;"></i></div>
+          <span>Sign In</span>
+        </button>
+        <!-- Logged in -->
+        <button id="userMenuBtn" class="user-btn" style="display:none;" onclick="toggleUserMenu()">
+          <div class="user-avatar" id="headerAvatar">U</div>
+          <span id="headerName">User</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:0.7;"></i>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <div class="user-menu-item" style="border-bottom:1px solid #f3f4f6;cursor:default;">
+            <i class="fa-solid fa-envelope"></i>
+            <span id="menuEmail" style="font-size:12px;color:#6b7280;word-break:break-all;"></span>
+          </div>
+          <div class="user-menu-item" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</div>
+        </div>
+      </div>
+      <!-- CART -->
       <button onclick="openCart()" class="relative text-white hover:text-accent transition">
         <i class="fa-solid fa-bag-shopping text-xl"></i>
         <span id="cartBadge" class="absolute -top-2 -right-2 bg-accent text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
@@ -109,17 +192,17 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
     </div>
   </div>
   <div id="mobileNav" class="hidden md:hidden bg-brand px-4 pb-4">
-    <a href="#products" class="block text-white/80 py-2 text-sm">Shop</a>
+    <a href="#products"   class="block text-white/80 py-2 text-sm">Shop</a>
     <a href="#categories" class="block text-white/80 py-2 text-sm">Categories</a>
-    <a href="#story" class="block text-white/80 py-2 text-sm">Our Story</a>
-    <a href="#gallery" class="block text-white/80 py-2 text-sm">Gallery</a>
-    <a href="#reviews" class="block text-white/80 py-2 text-sm">Reviews</a>
-    <a href="#faq" class="block text-white/80 py-2 text-sm">FAQ</a>
+    <a href="#story"      class="block text-white/80 py-2 text-sm">Our Story</a>
+    <a href="#gallery"    class="block text-white/80 py-2 text-sm">Gallery</a>
+    <a href="#reviews"    class="block text-white/80 py-2 text-sm">Reviews</a>
+    <a href="#faq"        class="block text-white/80 py-2 text-sm">FAQ</a>
   </div>
 </header>
 
-<!-- HERO -->
-<section class="hero-section">
+<!-- ═══════════ HERO — background Supabase se ═══════════ -->
+<section id="hero">
   <div class="hero-content max-w-7xl mx-auto px-6 py-20 w-full">
     <div class="max-w-2xl">
       <p class="text-accent font-semibold text-sm tracking-widest mb-4 uppercase">New Season 2025</p>
@@ -142,29 +225,29 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 <section class="bg-accent py-3 overflow-hidden marquee-wrap">
   <div class="marquee-track">
     <div class="flex items-center gap-12 pr-12 text-white font-semibold text-sm whitespace-nowrap">
-      <span><i class="fa-solid fa-truck mr-2"></i>Free Delivery on Orders over PKR 3000</span>
+      <span><i class="fa-solid fa-truck mr-2"></i>Free Delivery over PKR 3000</span>
       <span><i class="fa-solid fa-money-bill-wave mr-2"></i>Cash on Delivery Available</span>
-      <span><i class="fa-solid fa-star mr-2"></i>5-Star Rated Footwear Brand</span>
+      <span><i class="fa-solid fa-star mr-2"></i>5-Star Rated Brand</span>
       <span><i class="fa-solid fa-rotate-left mr-2"></i>30-Day Easy Returns</span>
       <span><i class="fa-solid fa-shield-halved mr-2"></i>100% Authentic Products</span>
       <span><i class="fa-solid fa-bolt mr-2"></i>Same-Day Dispatch</span>
       <span><i class="fa-solid fa-gift mr-2"></i>Free Gift Wrapping</span>
-      <span><i class="fa-solid fa-headset mr-2"></i>24/7 Customer Support</span>
+      <span><i class="fa-solid fa-headset mr-2"></i>24/7 Support</span>
     </div>
-    <div class="flex items-center gap-12 pr-12 text-white font-semibold text-sm whitespace-nowrap">
-      <span><i class="fa-solid fa-truck mr-2"></i>Free Delivery on Orders over PKR 3000</span>
+    <div class="flex items-center gap-12 pr-12 text-white font-semibold text-sm whitespace-nowrap" aria-hidden>
+      <span><i class="fa-solid fa-truck mr-2"></i>Free Delivery over PKR 3000</span>
       <span><i class="fa-solid fa-money-bill-wave mr-2"></i>Cash on Delivery Available</span>
-      <span><i class="fa-solid fa-star mr-2"></i>5-Star Rated Footwear Brand</span>
+      <span><i class="fa-solid fa-star mr-2"></i>5-Star Rated Brand</span>
       <span><i class="fa-solid fa-rotate-left mr-2"></i>30-Day Easy Returns</span>
       <span><i class="fa-solid fa-shield-halved mr-2"></i>100% Authentic Products</span>
       <span><i class="fa-solid fa-bolt mr-2"></i>Same-Day Dispatch</span>
       <span><i class="fa-solid fa-gift mr-2"></i>Free Gift Wrapping</span>
-      <span><i class="fa-solid fa-headset mr-2"></i>24/7 Customer Support</span>
+      <span><i class="fa-solid fa-headset mr-2"></i>24/7 Support</span>
     </div>
   </div>
 </section>
 
-<!-- ===== SHOP BY CATEGORY — admin images from site_sections ===== -->
+<!-- CATEGORIES -->
 <section id="categories" class="py-20 px-4">
   <div class="max-w-7xl mx-auto">
     <div class="text-center mb-12 fade-up">
@@ -179,7 +262,7 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
   </div>
 </section>
 
-<!-- ===== FEATURED PRODUCTS ===== -->
+<!-- PRODUCTS -->
 <section id="products" class="py-16 px-4 bg-white">
   <div class="max-w-7xl mx-auto">
     <div class="text-center mb-8 fade-up">
@@ -200,12 +283,11 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
   </div>
 </section>
 
-<!-- LIMITED TIME OFFER -->
+<!-- SALE COUNTDOWN -->
 <section class="py-20 px-4" style="background:linear-gradient(135deg,#1a1a2e 60%,#2d1b3d 100%);">
   <div class="max-w-4xl mx-auto text-center fade-up">
     <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-3">Limited Time Only</p>
     <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,72px);color:#fff;letter-spacing:2px;">Season Sale — Up to <span style="color:#e94560;">40% Off</span></h2>
-    <p class="text-white/70 mt-4 text-base max-w-lg mx-auto">Premium footwear at unbeatable prices. Don't miss out!</p>
     <div class="flex gap-4 justify-center mt-8 flex-wrap">
       <div class="countdown-box"><p style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;" id="cDays">00</p><p class="text-white/60 text-xs uppercase">Days</p></div>
       <div class="countdown-box"><p style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;" id="cHours">00</p><p class="text-white/60 text-xs uppercase">Hours</p></div>
@@ -216,18 +298,17 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
   </div>
 </section>
 
-<!-- ===== OUR STORY — image from admin site_sections (key: story) ===== -->
+<!-- OUR STORY -->
 <section id="story" class="py-20 px-4" style="background:#f8f7f4;">
   <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
     <div class="fade-up">
       <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-3">Our Story</p>
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,52px);letter-spacing:2px;line-height:1.1;">Passion for Every Step</h2>
-      <p class="text-gray-600 mt-5 text-base leading-relaxed">SoleStride was born from a simple belief: everyone deserves footwear that feels as good as it looks. From the busy streets of Karachi to the cool hills of Murree, our shoes are built for real life.</p>
-      <p class="text-gray-600 mt-4 text-base leading-relaxed">We partner with trusted manufacturers to bring you authentic, high-quality footwear for the entire family — at prices that make sense in Pakistan.</p>
+      <p class="text-gray-600 mt-5 text-base leading-relaxed">SoleStride was born from a simple belief: everyone deserves footwear that feels as good as it looks. From Karachi streets to Murree hills — our shoes are built for real life.</p>
       <div class="grid grid-cols-3 gap-4 mt-8">
         <div class="text-center p-4 rounded-xl bg-white shadow-sm"><i class="fa-solid fa-shoe-prints text-accent text-2xl mb-2"></i><p class="font-bold text-sm">500+ Styles</p></div>
         <div class="text-center p-4 rounded-xl bg-white shadow-sm"><i class="fa-solid fa-leaf text-accent text-2xl mb-2"></i><p class="font-bold text-sm">Eco Packaging</p></div>
-        <div class="text-center p-4 rounded-xl bg-white shadow-sm"><i class="fa-solid fa-award text-accent text-2xl mb-2"></i><p class="font-bold text-sm">Award-Winning</p></div>
+        <div class="text-center p-4 rounded-xl bg-white shadow-sm"><i class="fa-solid fa-award text-accent text-2xl mb-2"></i><p class="font-bold text-sm">Award Winning</p></div>
       </div>
     </div>
     <div class="fade-up">
@@ -242,7 +323,7 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
   </div>
 </section>
 
-<!-- WHY CHOOSE US -->
+<!-- WHY US -->
 <section class="py-20 px-4 bg-white">
   <div class="max-w-7xl mx-auto">
     <div class="text-center mb-14 fade-up">
@@ -254,25 +335,25 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
         <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fa-solid fa-people-group text-accent text-2xl"></i></div>
         <p style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:#e94560;">10K+</p>
         <p class="font-bold text-lg mb-2">Happy Customers</p>
-        <p class="text-gray-500 text-sm leading-relaxed">Thousands of satisfied customers across Pakistan trust SoleStride for their footwear needs.</p>
+        <p class="text-gray-500 text-sm">Thousands of satisfied customers across Pakistan.</p>
       </div>
       <div class="text-center p-8 rounded-2xl border border-gray-100 hover:shadow-xl transition-shadow">
         <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fa-solid fa-shield-halved text-accent text-2xl"></i></div>
         <p style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:#e94560;">1-Year</p>
         <p class="font-bold text-lg mb-2">Quality Guarantee</p>
-        <p class="text-gray-500 text-sm leading-relaxed">Every product comes with our quality promise. No questions asked.</p>
+        <p class="text-gray-500 text-sm">Every product backed by our quality promise.</p>
       </div>
       <div class="text-center p-8 rounded-2xl border border-gray-100 hover:shadow-xl transition-shadow">
         <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fa-solid fa-truck-fast text-accent text-2xl"></i></div>
         <p style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:#e94560;">3-5</p>
         <p class="font-bold text-lg mb-2">Days Delivery</p>
-        <p class="text-gray-500 text-sm leading-relaxed">Fast, reliable delivery to all major cities in Pakistan.</p>
+        <p class="text-gray-500 text-sm">Fast, reliable delivery to all major cities.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== PREMIUM QUALITY — image from admin site_sections (key: premium_quality) ===== -->
+<!-- PREMIUM QUALITY -->
 <section class="py-20 px-4" style="background:#f8f7f4;">
   <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
     <div class="fade-up order-2 md:order-1">
@@ -281,19 +362,18 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
     <div class="fade-up order-1 md:order-2">
       <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-3">Premium Quality</p>
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,4vw,48px);letter-spacing:2px;line-height:1.1;">Built to Last,<br/>Made to Impress</h2>
-      <p class="text-gray-600 mt-4 leading-relaxed">Each pair of SoleStride shoes is carefully selected for durability, comfort, and style. We work only with manufacturers who meet our strict quality standards.</p>
+      <p class="text-gray-600 mt-4 leading-relaxed">Each pair is carefully selected for durability, comfort, and style.</p>
       <div class="mt-6 space-y-4">
-        <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Premium Materials</p><p class="text-gray-500 text-sm">Genuine leather, breathable mesh, and durable rubber soles.</p></div></div>
+        <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Premium Materials</p><p class="text-gray-500 text-sm">Genuine leather, breathable mesh, durable soles.</p></div></div>
         <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Ergonomic Comfort</p><p class="text-gray-500 text-sm">Cushioned insoles and arch support for all-day wear.</p></div></div>
-        <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Rigorous Testing</p><p class="text-gray-500 text-sm">Every pair undergoes quality checks before it reaches you.</p></div></div>
-        <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Sustainable Packaging</p><p class="text-gray-500 text-sm">Eco-friendly boxes and minimal waste packaging.</p></div></div>
+        <div class="flex gap-3 items-start"><i class="fa-solid fa-circle-check text-accent mt-1 text-lg"></i><div><p class="font-semibold">Rigorous Testing</p><p class="text-gray-500 text-sm">Every pair undergoes quality checks before shipping.</p></div></div>
       </div>
-      <a href="#products" class="inline-block mt-8"><button class="btn-solid px-8 py-3">Shop Premium Collection <i class="fa-solid fa-arrow-right ml-2"></i></button></a>
+      <a href="#products" class="inline-block mt-8"><button class="btn-solid px-8 py-3">Shop Premium <i class="fa-solid fa-arrow-right ml-2"></i></button></a>
     </div>
   </div>
 </section>
 
-<!-- ===== GALLERY — 4 images from admin gallery_images table ===== -->
+<!-- GALLERY -->
 <section id="gallery" class="py-20 px-4" style="background:#1a1a2e;">
   <div class="max-w-7xl mx-auto">
     <div class="text-center mb-12 fade-up">
@@ -307,24 +387,7 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
       <div class="skeleton-dark" style="height:220px;"></div>
       <div class="skeleton-dark mt-8" style="height:220px;"></div>
     </div>
-    <div class="text-center mt-12">
-      <a href="#products"><button class="btn-solid px-10 py-4 text-base">Shop This Look <i class="fa-solid fa-arrow-right ml-2"></i></button></a>
-    </div>
-  </div>
-</section>
-
-<!-- CUSTOM ORDERS -->
-<section class="py-20 px-4 bg-white">
-  <div class="max-w-7xl mx-auto text-center fade-up">
-    <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-3">Custom Orders</p>
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;">Can't Find Your Size?<br/>We've Got You.</h2>
-    <p class="text-gray-600 mt-4 max-w-xl mx-auto leading-relaxed">Order any product in a custom size, color, or style. Our team will source it just for you.</p>
-    <div class="grid md:grid-cols-3 gap-8 mt-12">
-      <div class="p-8 rounded-2xl bg-gray-50 hover:shadow-lg transition-shadow"><div class="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-phone text-accent text-xl"></i></div><h3 class="font-bold text-base mb-2">Free Consultation</h3><p class="text-gray-500 text-sm">Call or WhatsApp us — no pressure, no fees.</p></div>
-      <div class="p-8 rounded-2xl bg-gray-50 hover:shadow-lg transition-shadow"><div class="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-ruler text-accent text-xl"></i></div><h3 class="font-bold text-base mb-2">Size Customization</h3><p class="text-gray-500 text-sm">We cater to every foot type across our full range.</p></div>
-      <div class="p-8 rounded-2xl bg-gray-50 hover:shadow-lg transition-shadow"><div class="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-truck text-accent text-xl"></i></div><h3 class="font-bold text-base mb-2">Doorstep Delivery</h3><p class="text-gray-500 text-sm">Delivered anywhere in Pakistan within 7–10 days.</p></div>
-    </div>
-    <a href="https://wa.me/923152007950" target="_blank"><button class="btn-solid mt-10 text-base px-10 py-4"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp for Custom Order</button></a>
+    <div class="text-center mt-12"><a href="#products"><button class="btn-solid px-10 py-4 text-base">Shop This Look <i class="fa-solid fa-arrow-right ml-2"></i></button></a></div>
   </div>
 </section>
 
@@ -336,19 +399,19 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;">What Our Customers Say</h2>
     </div>
     <div class="grid md:grid-cols-3 gap-8 fade-up">
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"I ordered Nike Air Max for my husband and the quality is absolutely amazing. Delivered in just 3 days to Karachi. Will definitely order again!"</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white font-bold text-sm">FZ</div><div><p class="font-semibold text-sm">Fatima Zahra</p><p class="text-gray-400 text-xs">Karachi</p></div></div></div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"Best shoes store in Pakistan! Got kids' shoes for my three children and the fit was perfect. The return process was also super easy."</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full bg-brand flex items-center justify-center text-white font-bold text-sm">AK</div><div><p class="font-semibold text-sm">Ahmed Khan</p><p class="text-gray-400 text-xs">Lahore</p></div></div></div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"The women's heels I ordered are stunning — exactly as shown in the pictures. Packaging was beautiful and delivery was on time. 10/10!"</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:#c9b99a;">SM</div><div><p class="font-semibold text-sm">Sara Malik</p><p class="text-gray-400 text-xs">Islamabad</p></div></div></div>
+      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"I ordered Nike Air Max for my husband — quality is amazing. Delivered in 3 days to Karachi!"</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white font-bold text-sm">FZ</div><div><p class="font-semibold text-sm">Fatima Zahra</p><p class="text-gray-400 text-xs">Karachi</p></div></div></div>
+      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"Best shoes store in Pakistan! Kids shoes perfect fit and return process was easy."</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full bg-brand flex items-center justify-center text-white font-bold text-sm">AK</div><div><p class="font-semibold text-sm">Ahmed Khan</p><p class="text-gray-400 text-xs">Lahore</p></div></div></div>
+      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow"><div class="flex text-amber-400 text-sm mb-4">★★★★★</div><p class="text-gray-700 leading-relaxed italic">"The women's heels are stunning — exactly as shown. Beautiful packaging, on time. 10/10!"</p><div class="flex items-center gap-3 mt-6"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:#c9b99a;">SM</div><div><p class="font-semibold text-sm">Sara Malik</p><p class="text-gray-400 text-xs">Islamabad</p></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- ===== FOLLOW US ON INSTAGRAM — 4 images from admin instagram_images table ===== -->
+<!-- INSTAGRAM -->
 <section class="py-20 px-4 bg-white">
   <div class="max-w-7xl mx-auto text-center fade-up">
     <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-3">Follow Us</p>
     <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,52px);letter-spacing:2px;">@SoleStride on Instagram</h2>
-    <p class="text-gray-500 mt-3 mb-10">Tag us in your photos for a chance to be featured!</p>
+    <p class="text-gray-500 mt-3 mb-10">Tag us in your photos to be featured!</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="instaGrid">
       <div class="skeleton" style="height:200px;border-radius:12px;"></div>
       <div class="skeleton" style="height:200px;border-radius:12px;"></div>
@@ -367,11 +430,11 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;">Got Questions?</h2>
     </div>
     <div class="space-y-4 fade-up">
-      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">How do I know which size to order?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm leading-relaxed">We recommend measuring your foot length in cm and comparing with our chart. If between sizes, go up. WhatsApp us for help!</div></div>
-      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">Do you offer Cash on Delivery (COD)?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm leading-relaxed">Yes! We offer COD across all major cities in Pakistan including Karachi, Lahore, Islamabad, Rawalpindi, Peshawar, and Faisalabad.</div></div>
-      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">What is your return and exchange policy?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm leading-relaxed">We offer a 30-day return and exchange policy. If the product is defective or wrong size, we will replace it or give a full refund.</div></div>
-      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">How long does delivery take?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm leading-relaxed">Standard delivery takes 3–5 business days. Same-day dispatch available if you order before 2 PM.</div></div>
-      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">Are your products 100% original?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm leading-relaxed">Absolutely. We source directly from authorized distributors. Every product comes with original packaging and brand tags.</div></div>
+      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">Do you offer Cash on Delivery?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm">Yes! COD available across all major cities in Pakistan.</div></div>
+      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">How long does delivery take?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm">3–5 business days. Same-day dispatch if ordered before 2 PM.</div></div>
+      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">What is your return policy?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm">30-day return and exchange. Defective or wrong item — full replacement or refund.</div></div>
+      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">Are your products 100% original?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm">Absolutely. Sourced directly from authorized distributors with original packaging.</div></div>
+      <div class="bg-white rounded-xl overflow-hidden"><button class="w-full flex justify-between items-center p-5 text-left font-semibold text-base" onclick="toggleFaq(this)">Why do I need to sign in to order?<i class="fa-solid fa-chevron-down text-accent faq-chevron"></i></button><div class="faq-answer px-5 pb-5 text-gray-600 text-sm">Signing in lets you track your orders and ensures a smooth, secure checkout experience. It's free and takes only 30 seconds!</div></div>
     </div>
   </div>
 </section>
@@ -379,17 +442,9 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 <!-- FOOTER -->
 <footer style="background:#1a1a2e;color:#fff;" class="py-16 px-4">
   <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
-    <div>
-      <p style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;">Sole<span style="color:#e94560;">Stride</span></p>
-      <p class="text-white/60 text-sm mt-3 leading-relaxed">Pakistan's premium footwear destination. Style, comfort, and quality — all in one place.</p>
-      <div class="flex gap-3 mt-4">
-        <a href="https://instagram.com/solestride" target="_blank" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-instagram text-sm"></i></a>
-        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-facebook-f text-sm"></i></a>
-        <a href="https://wa.me/923152007950" target="_blank" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-whatsapp text-sm"></i></a>
-      </div>
-    </div>
-    <div><p class="font-bold mb-4">Quick Links</p><div class="space-y-2 text-sm text-white/60"><a href="#products" class="block hover:text-white transition">Shop</a><a href="#categories" class="block hover:text-white transition">Categories</a><a href="#gallery" class="block hover:text-white transition">Gallery</a><a href="#faq" class="block hover:text-white transition">FAQ</a></div></div>
-    <div><p class="font-bold mb-4">Categories</p><div class="space-y-2 text-sm text-white/60"><a href="#products" onclick="filterCategory('Men',null)" class="block hover:text-white transition">Men's Shoes</a><a href="#products" onclick="filterCategory('Women',null)" class="block hover:text-white transition">Women's Shoes</a><a href="#products" onclick="filterCategory('Kids',null)" class="block hover:text-white transition">Kids' Shoes</a></div></div>
+    <div><p style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;">Sole<span style="color:#e94560;">Stride</span></p><p class="text-white/60 text-sm mt-3">Pakistan's premium footwear destination.</p><div class="flex gap-3 mt-4"><a href="https://instagram.com/solestride" target="_blank" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-instagram text-sm"></i></a><a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-facebook-f text-sm"></i></a><a href="https://wa.me/923152007950" target="_blank" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition"><i class="fa-brands fa-whatsapp text-sm"></i></a></div></div>
+    <div><p class="font-bold mb-4">Quick Links</p><div class="space-y-2 text-sm text-white/60"><a href="#products" class="block hover:text-white">Shop</a><a href="#categories" class="block hover:text-white">Categories</a><a href="#gallery" class="block hover:text-white">Gallery</a><a href="#faq" class="block hover:text-white">FAQ</a></div></div>
+    <div><p class="font-bold mb-4">Categories</p><div class="space-y-2 text-sm text-white/60"><a href="#products" onclick="filterCategory('Men',null)" class="block hover:text-white">Men's Shoes</a><a href="#products" onclick="filterCategory('Women',null)" class="block hover:text-white">Women's Shoes</a><a href="#products" onclick="filterCategory('Kids',null)" class="block hover:text-white">Kids' Shoes</a></div></div>
     <div><p class="font-bold mb-4">Contact</p><div class="space-y-2 text-sm text-white/60"><p><i class="fa-brands fa-whatsapp mr-2 text-green-400"></i>+92 315 200 7950</p><p><i class="fa-solid fa-envelope mr-2 text-accent"></i>support@solestride.pk</p><p><i class="fa-solid fa-location-dot mr-2 text-accent"></i>Karachi, Pakistan</p></div></div>
   </div>
   <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/10 text-center text-white/40 text-sm"><p>© 2025 SoleStride. All rights reserved.</p></div>
@@ -400,7 +455,7 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 <div id="cartSidebar">
   <div class="flex items-center justify-between p-6 border-b"><h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;">Your Cart</h2><button onclick="closeCart()" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button></div>
   <div id="cartItems" class="p-6 space-y-4"></div>
-  <div class="p-6 border-t"><div class="flex justify-between font-bold text-lg mb-4"><span>Total</span><span id="cartTotal" class="text-accent">PKR 0</span></div><button onclick="openOrderModal()" class="btn-solid w-full text-base py-4">Proceed to Order <i class="fa-solid fa-arrow-right ml-2"></i></button></div>
+  <div class="p-6 border-t"><div class="flex justify-between font-bold text-lg mb-4"><span>Total</span><span id="cartTotal" class="text-accent">PKR 0</span></div><button onclick="proceedToOrder()" class="btn-solid w-full text-base py-4">Proceed to Order <i class="fa-solid fa-arrow-right ml-2"></i></button></div>
 </div>
 
 <!-- PRODUCT MODAL -->
@@ -438,7 +493,10 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
     <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1.5px;margin-bottom:20px;">Complete Your Order</h2>
     <div id="orderSummary" class="bg-gray-50 rounded-xl p-4 mb-6 text-sm space-y-2"></div>
     <div class="flex justify-between font-bold text-lg mb-6"><span>Total</span><span id="orderTotal" class="text-accent"></span></div>
-    <div class="grid grid-cols-2 gap-4 mb-4"><div><label class="block text-xs font-bold mb-1 uppercase">First Name *</label><input id="oFName" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Ahmed"/></div><div><label class="block text-xs font-bold mb-1 uppercase">Last Name *</label><input id="oLName" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Khan"/></div></div>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div><label class="block text-xs font-bold mb-1 uppercase">First Name *</label><input id="oFName" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Ahmed"/></div>
+      <div><label class="block text-xs font-bold mb-1 uppercase">Last Name *</label><input id="oLName" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Khan"/></div>
+    </div>
     <div class="mb-4"><label class="block text-xs font-bold mb-1 uppercase">Full Address *</label><input id="oAddress" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Street, City"/></div>
     <div class="mb-4"><label class="block text-xs font-bold mb-1 uppercase">WhatsApp Number *</label><input id="oPhone" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="+92 3XX XXXXXXX"/></div>
     <div class="mb-6"><label class="block text-xs font-bold mb-1 uppercase">Order Notes</label><textarea id="oNotes" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm resize-none" rows="2" placeholder="Any special instructions..."></textarea></div>
@@ -446,66 +504,185 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
   </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
 <script>
-// ✅ APNI KEYS YAHAN DALEN
+// ══════════════════════════════
+// CONFIG — APNI KEYS YAHAN DALEN
+// ══════════════════════════════
 const SUPABASE_URL = 'https://hmrypwzkenjalttadigx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ZO3nB1XqqTvj9BUrQRUtLg_HMzo68uc';
 
 const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 let allProducts = [], filteredProducts = [];
 let currentProduct = null, modalQty = 1, selectedSize = null;
-let cart = JSON.parse(localStorage.getItem('solestride_cart') || '[]');
+let cart = JSON.parse(localStorage.getItem('ss_cart') || '[]');
+let currentUser = null;
 
-// ============================================================
-// INIT — Parallel load
-// ============================================================
-async function initAll() {
-  const [prods] = await Promise.all([
-    loadProducts(),
-    loadSections(),
-    loadGallery(),
-    loadInstagram()
-  ]);
+// ══════════════════════════════
+// ✅ USER AUTH
+// ══════════════════════════════
+function openAuthModal(tab) {
+  switchAuthTab(tab || 'login');
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('open');
+  document.body.style.overflow = '';
+  clearAuthForms();
+}
+function switchAuthTab(tab) {
+  document.getElementById('authLoginBody').style.display  = tab === 'login'  ? 'block' : 'none';
+  document.getElementById('authSignupBody').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',  tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+}
+function clearAuthForms() {
+  ['authEmail','authPass','suEmail','suPass'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['loginErr','loginOk','signupErr','signupOk'].forEach(id => document.getElementById(id).style.display='none');
 }
 
-// ============================================================
-// 1. PRODUCTS
-// ============================================================
+async function signIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPass').value.trim();
+  if (!email || !pass) { showAuthMsg('loginErr', 'Enter email and password.'); return; }
+  const btn = document.getElementById('signInBtn'); btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    setUserUI(data.user);
+    showAuthMsg('loginOk', '✅ Signed in! Redirecting...');
+    setTimeout(() => { closeAuthModal(); openOrderModal(); }, 800);
+  } catch(e) {
+    showAuthMsg('loginErr', e.message || 'Invalid email or password.');
+  } finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+
+async function signUp() {
+  const email = document.getElementById('suEmail').value.trim();
+  const pass  = document.getElementById('suPass').value.trim();
+  if (!email || !pass) { showAuthMsg('signupErr', 'Enter email and password.'); return; }
+  if (pass.length < 6)  { showAuthMsg('signupErr', 'Password must be at least 6 characters.'); return; }
+  const btn = document.getElementById('signUpBtn'); btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
+    if (error) throw error;
+    if (data.user && !data.user.email_confirmed_at) {
+      showAuthMsg('signupOk', '✅ Account created! Check your email to confirm, then sign in.');
+    } else {
+      setUserUI(data.user);
+      showAuthMsg('signupOk', '✅ Account created and signed in!');
+      setTimeout(() => { closeAuthModal(); openOrderModal(); }, 1000);
+    }
+  } catch(e) {
+    showAuthMsg('signupErr', e.message || 'Signup failed. Try a different email.');
+  } finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  setUserUI(null);
+  closeUserMenu();
+  showToast('Signed out!');
+}
+
+async function showForgotPw() {
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email) { showAuthMsg('loginErr', 'Enter your email first, then click Forgot Password.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email);
+  if (error) { showAuthMsg('loginErr', error.message); }
+  else { showAuthMsg('loginOk', '✅ Password reset email sent! Check your inbox.'); }
+}
+
+function setUserUI(user) {
+  currentUser = user;
+  const signInBtn   = document.getElementById('signInHeaderBtn');
+  const userMenuBtn = document.getElementById('userMenuBtn');
+  if (user) {
+    signInBtn.style.display   = 'none';
+    userMenuBtn.style.display = 'flex';
+    const name = user.email.split('@')[0];
+    document.getElementById('headerName').textContent    = name;
+    document.getElementById('headerAvatar').textContent  = name[0].toUpperCase();
+    document.getElementById('menuEmail').textContent     = user.email;
+  } else {
+    signInBtn.style.display   = 'flex';
+    userMenuBtn.style.display = 'none';
+  }
+}
+
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('userMenu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('userBtnWrap').contains(e.target)) closeUserMenu();
+});
+
+function showAuthMsg(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// Check session on load
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) setUserUI(session.user);
+})();
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+async function initAll() {
+  await Promise.all([loadProducts(), loadSections(), loadGallery(), loadInstagram()]);
+}
+
+// ══════════════════════════════
+// HERO — dynamic background
+// ══════════════════════════════
+async function loadHeroBg() {
+  // loaded inside loadSections
+}
+
+// ══════════════════════════════
+// PRODUCTS
+// ══════════════════════════════
 async function loadProducts() {
   try {
-    const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false });
+    const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false });
     if (error) throw error;
     allProducts = data || [];
     filteredProducts = allProducts;
     renderProducts(filteredProducts);
     renderCategoryCards();
-  } catch (err) {
-    document.getElementById('productGrid').innerHTML = `<div class="empty-state col-span-3"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i><p style="color:#ef4444;font-weight:600;">Products load failed. Check your Supabase keys.</p></div>`;
-    renderCategoryCards();
+  } catch(e) {
+    document.getElementById('productGrid').innerHTML = `<div class="empty-state col-span-3"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i><p style="color:#ef4444;font-weight:600;">Products load failed. Check Supabase config.</p></div>`;
   }
 }
 
-function renderProducts(products) {
-  const grid = document.getElementById('productGrid');
-  if (!products || !products.length) {
-    grid.innerHTML = `<div class="empty-state col-span-3"><i class="fa-solid fa-shoe-prints"></i><p class="font-semibold text-lg">No products in this category</p></div>`;
-    return;
-  }
-  grid.innerHTML = products.map(p => {
-    const img = p.image_url || `https://placehold.co/400x260/1a1a2e/fff?text=${encodeURIComponent(p.name)}`;
+function renderProducts(prods) {
+  const g = document.getElementById('productGrid');
+  if (!prods || !prods.length) { g.innerHTML = `<div class="empty-state col-span-3"><i class="fa-solid fa-shoe-prints"></i><p class="font-semibold text-lg">No products found</p></div>`; return; }
+  g.innerHTML = prods.map(p => {
+    const img   = p.image_url || `https://placehold.co/400x260/1a1a2e/fff?text=${encodeURIComponent(p.name)}`;
     const badge = p.badge ? `<span class="absolute top-3 left-3 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full z-10">${p.badge}</span>` : '';
-    const orig = p.original_price ? `<span class="text-gray-400 line-through text-sm ml-2">PKR ${Number(p.original_price).toLocaleString()}</span>` : '';
+    const orig  = p.original_price ? `<span class="text-gray-400 line-through text-sm ml-2">PKR ${Number(p.original_price).toLocaleString()}</span>` : '';
     return `<div class="product-card fade-up" onclick="openProductModal(${p.id})">
-      <div class="card-img relative">${badge}<img src="${img}" alt="${p.name}" onerror="this.src='https://placehold.co/400x260/1a1a2e/fff?text=${encodeURIComponent(p.name)}'"/></div>
+      <div class="card-img relative">${badge}<img src="${img}" alt="${p.name}" onerror="this.src='https://placehold.co/400x260/1a1a2e/fff?text=Shoe'"/></div>
       <div class="p-5">
         <span class="text-xs font-bold text-accent tracking-widest uppercase">${p.category}</span>
         <h3 class="font-bold text-lg mt-1 mb-2 leading-tight">${p.name}</h3>
         <p class="text-gray-500 text-sm mb-4" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.description||''}</p>
         <div class="flex items-center justify-between">
           <div><span class="font-bold text-xl text-brand">PKR ${Number(p.price).toLocaleString()}</span>${orig}</div>
-          <button onclick="event.stopPropagation();quickAddToCart(${p.id})" class="btn-solid py-2 px-4 text-sm"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+          <button onclick="event.stopPropagation();quickAdd(${p.id})" class="btn-solid py-2 px-4 text-sm"><i class="fa-solid fa-plus mr-1"></i>Add</button>
         </div>
       </div>
     </div>`;
@@ -513,31 +690,42 @@ function renderProducts(products) {
   observeFadeUp();
 }
 
-// ============================================================
-// 2. CATEGORY CARDS
-//    Priority: admin-set image (site_sections) → first product image
-// ============================================================
+// ══════════════════════════════
+// SECTIONS (hero, story, premium, categories)
+// ══════════════════════════════
+async function loadSections() {
+  try {
+    const { data } = await sb.from('site_sections').select('*');
+    const map = {};
+    (data||[]).forEach(s => map[s.section_key] = s);
+
+    // Hero background
+    if (map.hero?.image_url) {
+      document.getElementById('hero').style.backgroundImage = `url('${map.hero.image_url}')`;
+    }
+    // Story image
+    if (map.story?.image_url) document.getElementById('storyImg').src = map.story.image_url;
+    // Premium image
+    if (map.premium_quality?.image_url) document.getElementById('premiumImg').src = map.premium_quality.image_url;
+
+    // Store for category cards
+    window._sections = map;
+  } catch(e) {}
+}
+
 async function renderCategoryCards() {
+  const map  = window._sections || {};
   const cats = [
     { key:'cat_men',   cat:'Men',   label:"Men's Collection",   sub:'Sports, Casual & Formal',  fb:'1a1a2e' },
     { key:'cat_women', cat:'Women', label:"Women's Collection", sub:'Heels, Flats & Sneakers',  fb:'e94560' },
-    { key:'cat_kids',  cat:'Kids',  label:"Kids' Collection",   sub:'Comfy & Durable Styles',   fb:'c9b99a' }
+    { key:'cat_kids',  cat:'Kids',  label:"Kids' Collection",   sub:'Comfy & Durable Styles',   fb:'c9b99a' },
   ];
-  let sections = {};
-  try {
-    const { data } = await supabaseClient.from('site_sections').select('*').in('section_key',['cat_men','cat_women','cat_kids']);
-    (data||[]).forEach(s => sections[s.section_key] = s);
-  } catch(e) {}
-
   document.getElementById('categoryGrid').innerHTML = cats.map(c => {
-    let imgSrc = sections[c.key]?.image_url || '';
-    if (!imgSrc) {
-      const first = allProducts.find(p => p.category === c.cat);
-      imgSrc = first?.image_url || '';
-    }
-    const finalImg = imgSrc || `https://placehold.co/600x380/${c.fb}/fff?text=${encodeURIComponent(c.label)}`;
+    let img = map[c.key]?.image_url || '';
+    if (!img) { const fp = allProducts.find(p => p.category === c.cat); img = fp?.image_url || ''; }
+    const finalImg = img || `https://placehold.co/600x380/${c.fb}/fff?text=${encodeURIComponent(c.label)}`;
     return `<div class="cat-card fade-up" onclick="filterCategory('${c.cat}',null)">
-      <img src="${finalImg}" alt="${c.label}" onerror="this.src='https://placehold.co/600x380/${c.fb}/fff?text=${encodeURIComponent(c.label)}'"/>
+      <img src="${finalImg}" alt="${c.label}" onerror="this.src='https://placehold.co/600x380/${c.fb}/fff?text=Category'"/>
       <div class="cat-label">
         <p class="text-white font-bold text-2xl" style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;">${c.label}</p>
         <p class="text-white/70 text-sm mt-1">${c.sub}</p>
@@ -548,135 +736,161 @@ async function renderCategoryCards() {
   observeFadeUp();
 }
 
-// ============================================================
-// 3. SITE SECTIONS — Story + Premium Quality images
-// ============================================================
-async function loadSections() {
-  try {
-    const { data } = await supabaseClient.from('site_sections').select('*').in('section_key',['story','premium_quality']);
-    (data||[]).forEach(s => {
-      if (s.section_key==='story' && s.image_url) document.getElementById('storyImg').src = s.image_url;
-      if (s.section_key==='premium_quality' && s.image_url) document.getElementById('premiumImg').src = s.image_url;
-    });
-  } catch(e) {}
-}
-
-// ============================================================
-// 4. GALLERY — 4 images
-// ============================================================
+// ══════════════════════════════
+// GALLERY + INSTAGRAM
+// ══════════════════════════════
 async function loadGallery() {
-  const grid = document.getElementById('galleryGrid');
+  const g = document.getElementById('galleryGrid');
   try {
-    const { data, error } = await supabaseClient.from('gallery_images').select('*').eq('is_active',true).order('position');
-    if (error) throw error;
-    if (!data||!data.length) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><i class="fa-solid fa-images" style="font-size:40px;display:block;margin-bottom:12px;"></i><p>Admin panel se Gallery images add karein</p></div>`;
-      return;
-    }
-    grid.innerHTML = data.map((img,i) => `
+    const { data } = await sb.from('gallery_images').select('*').eq('is_active', true).order('position');
+    if (!data || !data.length) { g.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><i class="fa-solid fa-images" style="font-size:36px;display:block;margin-bottom:10px;"></i><p>Gallery images coming soon!</p></div>`; return; }
+    g.innerHTML = data.map((img, i) => `
       <div class="gallery-item${i%2===1?' mt-8':''}">
-        <img src="${img.image_url}" alt="${img.caption||'Gallery '+(i+1)}" onerror="this.src='https://placehold.co/400x220/e94560/fff?text=Gallery'"/>
+        <img src="${img.image_url}" alt="${img.caption||'Gallery'}" onerror="this.src='https://placehold.co/400x220/e94560/fff?text=Gallery'"/>
         <div class="g-overlay"><i class="fa-solid fa-expand g-icon"></i></div>
-        ${img.caption?`<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,26,46,0.7));padding:10px 14px;"><p style="color:#fff;font-size:12px;font-weight:600;">${img.caption}</p></div>`:''}
+        ${img.caption ? `<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,26,46,0.7));padding:10px 13px;"><p style="color:#fff;font-size:12px;font-weight:600;">${img.caption}</p></div>` : ''}
       </div>`).join('');
-  } catch(e) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.3);padding:40px;">Gallery load failed</div>`;
-  }
+  } catch(e) { g.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.3);padding:30px;">Gallery load failed</div>`; }
   observeFadeUp();
 }
 
-// ============================================================
-// 5. INSTAGRAM — 4 images
-// ============================================================
 async function loadInstagram() {
-  const grid = document.getElementById('instaGrid');
+  const g = document.getElementById('instaGrid');
   try {
-    const { data, error } = await supabaseClient.from('instagram_images').select('*').eq('is_active',true).order('position');
-    if (error) throw error;
-    if (!data||!data.length) {
-      grid.innerHTML = `<div class="empty-state col-span-4"><i class="fa-brands fa-instagram text-accent"></i><p>Admin panel se Instagram images add karein</p></div>`;
-      return;
-    }
-    grid.innerHTML = data.map((img,i) => `
+    const { data } = await sb.from('instagram_images').select('*').eq('is_active', true).order('position');
+    if (!data || !data.length) { g.innerHTML = `<div class="empty-state col-span-4"><i class="fa-brands fa-instagram text-accent"></i><p>Instagram images coming soon!</p></div>`; return; }
+    g.innerHTML = data.map((img, i) => `
       <a href="${img.link_url||'#'}" target="_blank" class="insta-item">
-        <img src="${img.image_url}" alt="Instagram Post ${i+1}" onerror="this.src='https://placehold.co/300x200/1a1a2e/fff?text=Post+${i+1}'"/>
+        <img src="${img.image_url}" alt="Instagram Post ${i+1}" onerror="this.src='https://placehold.co/300x200/1a1a2e/fff?text=Instagram'"/>
         <div class="i-overlay"><i class="fa-brands fa-instagram i-icon"></i></div>
       </a>`).join('');
-  } catch(e) {
-    grid.innerHTML = `<div class="empty-state col-span-4">Instagram images load failed</div>`;
-  }
+  } catch(e) { g.innerHTML = `<div class="empty-state col-span-4">Instagram images load failed</div>`; }
 }
 
-// ============================================================
+// ══════════════════════════════
 // FILTER
-// ============================================================
+// ══════════════════════════════
 function filterCategory(cat, btn) {
-  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  filteredProducts = cat==='All' ? allProducts : allProducts.filter(p=>p.category===cat);
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filteredProducts = cat === 'All' ? allProducts : allProducts.filter(p => p.category === cat);
   renderProducts(filteredProducts);
-  document.getElementById('products').scrollIntoView({behavior:'smooth'});
+  document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ============================================================
+// ══════════════════════════════
 // PRODUCT MODAL
-// ============================================================
-function openProductModal(id){
-  currentProduct=allProducts.find(p=>p.id===id); if(!currentProduct)return;
-  modalQty=1; selectedSize=null;
-  const img=currentProduct.image_url||`https://placehold.co/400x320/1a1a2e/fff?text=${encodeURIComponent(currentProduct.name)}`;
-  document.getElementById('modalTitle').textContent=currentProduct.name;
-  document.getElementById('modalPrice').textContent=`PKR ${Number(currentProduct.price).toLocaleString()}`;
-  document.getElementById('modalDesc').textContent=currentProduct.description||'';
-  document.getElementById('modalCategory').textContent=currentProduct.category;
-  document.getElementById('modalQty').textContent=1;
-  document.getElementById('modalMainImg').src=img;
-  document.getElementById('modalThumbs').innerHTML=[img,img,img].map((s,i)=>`<div class="thumb${i===0?' active':''}" onclick="switchThumb(this,'${s}')"><img src="${s}"/></div>`).join('');
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+// ══════════════════════════════
+function openProductModal(id) {
+  currentProduct = allProducts.find(p => p.id === id); if (!currentProduct) return;
+  modalQty = 1; selectedSize = null;
+  const img = currentProduct.image_url || `https://placehold.co/400x320/1a1a2e/fff?text=Shoe`;
+  document.getElementById('modalTitle').textContent    = currentProduct.name;
+  document.getElementById('modalPrice').textContent    = `PKR ${Number(currentProduct.price).toLocaleString()}`;
+  document.getElementById('modalDesc').textContent     = currentProduct.description || '';
+  document.getElementById('modalCategory').textContent = currentProduct.category;
+  document.getElementById('modalQty').textContent      = 1;
+  document.getElementById('modalMainImg').src          = img;
+  document.getElementById('modalThumbs').innerHTML     = [img,img,img].map((s,i) => `<div class="thumb${i===0?' active':''}" onclick="switchThumb(this,'${s}')"><img src="${s}"/></div>`).join('');
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('productModal').classList.add('open');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 }
-function closeProductModal(e){if(!e||e.target===document.getElementById('productModal')){document.getElementById('productModal').classList.remove('open');document.body.style.overflow='';}}
-function switchThumb(el,src){document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('modalMainImg').src=src;}
-function changeQty(d){modalQty=Math.max(1,modalQty+d);document.getElementById('modalQty').textContent=modalQty;}
-function selectSize(btn){document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedSize=btn.textContent;}
-function addToCartFromModal(){if(!currentProduct)return;addToCart(currentProduct,modalQty,selectedSize||'—');showToast(`${currentProduct.name} added to cart!`);closeProductModal();}
-function buyNow(){if(!currentProduct)return;addToCart(currentProduct,modalQty,selectedSize||'—');closeProductModal();openCart();}
-function quickAddToCart(id){const p=allProducts.find(x=>x.id===id);if(!p)return;addToCart(p,1,'—');showToast(`${p.name} added!`);}
+function closeProductModal(e) { if (!e || e.target === document.getElementById('productModal')) { document.getElementById('productModal').classList.remove('open'); document.body.style.overflow = ''; } }
+function switchThumb(el, src) { document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active')); el.classList.add('active'); document.getElementById('modalMainImg').src = src; }
+function changeQty(d) { modalQty = Math.max(1, modalQty + d); document.getElementById('modalQty').textContent = modalQty; }
+function selectSize(btn) { document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); selectedSize = btn.textContent; }
+function addToCartFromModal() { if (!currentProduct) return; addToCart(currentProduct, modalQty, selectedSize||'—'); showToast(`${currentProduct.name} added!`); closeProductModal(); }
+function buyNow() { if (!currentProduct) return; addToCart(currentProduct, modalQty, selectedSize||'—'); closeProductModal(); openCart(); }
+function quickAdd(id) { const p = allProducts.find(x => x.id === id); if (!p) return; addToCart(p, 1, '—'); showToast(`${p.name} added!`); }
 
-// ============================================================
+// ══════════════════════════════
 // CART
-// ============================================================
-function addToCart(product,qty,size){const key=`${product.id}-${size}`;const ex=cart.find(i=>i.key===key);if(ex){ex.qty+=qty;}else{cart.push({key,id:product.id,name:product.name,price:Number(product.price),img:product.image_url||'',size,qty});}saveCart();updateCartBadge();}
-function saveCart(){localStorage.setItem('solestride_cart',JSON.stringify(cart));}
-function updateCartBadge(){const t=cart.reduce((s,i)=>s+i.qty,0);const b=document.getElementById('cartBadge');b.textContent=t;b.classList.toggle('hidden',t===0);}
-function renderCartItems(){
-  const el=document.getElementById('cartItems');
-  if(!cart.length){el.innerHTML=`<div class="text-center text-gray-400 py-16"><i class="fa-solid fa-bag-shopping text-4xl mb-4 block"></i><p class="font-semibold">Your cart is empty</p></div>`;document.getElementById('cartTotal').textContent='PKR 0';return;}
-  el.innerHTML=cart.map(item=>`<div class="flex gap-4 items-start p-4 bg-gray-50 rounded-xl"><img src="${item.img||'https://placehold.co/64x64/1a1a2e/fff?text=Shoe'}" class="w-16 h-16 rounded-xl object-cover" onerror="this.src='https://placehold.co/64x64/1a1a2e/fff?text=Shoe'"/><div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${item.name}</p><p class="text-xs text-gray-500 mt-1">Size: ${item.size}</p><p class="text-accent font-bold mt-1">PKR ${(item.price*item.qty).toLocaleString()}</p><div class="flex items-center gap-3 mt-2"><button onclick="changeCartQty('${item.key}',-1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">−</button><span class="font-semibold text-sm">${item.qty}</span><button onclick="changeCartQty('${item.key}',1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">+</button></div></div><button onclick="removeCartItem('${item.key}')" class="text-gray-400 hover:text-red-500 mt-1"><i class="fa-solid fa-trash text-sm"></i></button></div>`).join('');
-  document.getElementById('cartTotal').textContent=`PKR ${cart.reduce((s,i)=>s+i.price*i.qty,0).toLocaleString()}`;
+// ══════════════════════════════
+function addToCart(p, qty, size) {
+  const key = `${p.id}-${size}`, ex = cart.find(i => i.key === key);
+  if (ex) { ex.qty += qty; } else { cart.push({ key, id: p.id, name: p.name, price: Number(p.price), img: p.image_url||'', size, qty }); }
+  saveCart(); updateBadge();
 }
-function changeCartQty(key,delta){const item=cart.find(i=>i.key===key);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(i=>i.key!==key);saveCart();updateCartBadge();renderCartItems();}
-function removeCartItem(key){cart=cart.filter(i=>i.key!==key);saveCart();updateCartBadge();renderCartItems();}
-function openCart(){document.getElementById('cartSidebar').classList.add('open');document.getElementById('cartOverlay').classList.add('open');renderCartItems();}
-function closeCart(){document.getElementById('cartSidebar').classList.remove('open');document.getElementById('cartOverlay').classList.remove('open');}
+function saveCart()  { localStorage.setItem('ss_cart', JSON.stringify(cart)); }
+function updateBadge() { const t = cart.reduce((s,i) => s+i.qty, 0); const b = document.getElementById('cartBadge'); b.textContent = t; b.classList.toggle('hidden', t === 0); }
+function renderCartItems() {
+  const el = document.getElementById('cartItems');
+  if (!cart.length) { el.innerHTML = `<div class="text-center text-gray-400 py-16"><i class="fa-solid fa-bag-shopping text-4xl mb-4 block"></i><p class="font-semibold">Your cart is empty</p></div>`; document.getElementById('cartTotal').textContent = 'PKR 0'; return; }
+  el.innerHTML = cart.map(item => `<div class="flex gap-4 items-start p-4 bg-gray-50 rounded-xl"><img src="${item.img||'https://placehold.co/64x64/1a1a2e/fff?text=Shoe'}" class="w-16 h-16 rounded-xl object-cover" onerror="this.src='https://placehold.co/64x64/1a1a2e/fff?text=Shoe'"/><div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${item.name}</p><p class="text-xs text-gray-500 mt-1">Size: ${item.size}</p><p class="text-accent font-bold mt-1">PKR ${(item.price*item.qty).toLocaleString()}</p><div class="flex items-center gap-3 mt-2"><button onclick="cQty('${item.key}',-1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">−</button><span class="font-semibold text-sm">${item.qty}</span><button onclick="cQty('${item.key}',1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">+</button></div></div><button onclick="rmItem('${item.key}')" class="text-gray-400 hover:text-red-500 mt-1"><i class="fa-solid fa-trash text-sm"></i></button></div>`).join('');
+  document.getElementById('cartTotal').textContent = `PKR ${cart.reduce((s,i) => s+i.price*i.qty, 0).toLocaleString()}`;
+}
+function cQty(key, d) { const i = cart.find(x => x.key === key); if (!i) return; i.qty += d; if (i.qty <= 0) cart = cart.filter(x => x.key !== key); saveCart(); updateBadge(); renderCartItems(); }
+function rmItem(key) { cart = cart.filter(i => i.key !== key); saveCart(); updateBadge(); renderCartItems(); }
+function openCart()  { document.getElementById('cartSidebar').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); renderCartItems(); }
+function closeCart() { document.getElementById('cartSidebar').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
 
-// ============================================================
-// ORDER
-// ============================================================
-function openOrderModal(){if(!cart.length){showToast('Your cart is empty!');return;}document.getElementById('orderSummary').innerHTML=cart.map(i=>`<div class="flex justify-between"><span>${i.name} × ${i.qty} (${i.size})</span><span class="font-semibold">PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('');document.getElementById('orderTotal').textContent=`PKR ${cart.reduce((s,i)=>s+i.price*i.qty,0).toLocaleString()}`;closeCart();document.getElementById('orderModal').classList.add('open');document.body.style.overflow='hidden';}
-function closeOrderModal(e){if(!e||e.target===document.getElementById('orderModal')){document.getElementById('orderModal').classList.remove('open');document.body.style.overflow='';}}
-function submitOrder(){const fn=document.getElementById('oFName').value.trim(),ln=document.getElementById('oLName').value.trim(),addr=document.getElementById('oAddress').value.trim(),phone=document.getElementById('oPhone').value.trim(),notes=document.getElementById('oNotes').value.trim();if(!fn||!ln||!addr||!phone){alert('Please fill in all required fields.');return;}const total=cart.reduce((s,i)=>s+i.price*i.qty,0);let msg=`🛒 *New Order — SoleStride*\n\n👤 *Customer:* ${fn} ${ln}\n📍 *Address:* ${addr}\n📱 *WhatsApp:* ${phone}\n\n*Order Items:*\n`;cart.forEach(i=>{msg+=`• ${i.name} (Size: ${i.size}) × ${i.qty} — PKR ${(i.price*i.qty).toLocaleString()}\n`;});msg+=`\n💰 *Total: PKR ${total.toLocaleString()}*\n💵 *Payment: Cash on Delivery*`;if(notes)msg+=`\n📝 *Notes:* ${notes}`;window.open(`https://wa.me/923152007950?text=${encodeURIComponent(msg)}`,'_blank');cart=[];saveCart();updateCartBadge();closeOrderModal();['oFName','oLName','oAddress','oPhone','oNotes'].forEach(id=>document.getElementById(id).value='');showToast('Order sent! ✅');}
+// ══════════════════════════════
+// ✅ PROCEED TO ORDER — Auth check
+// ══════════════════════════════
+function proceedToOrder() {
+  if (!cart.length) { showToast('Your cart is empty!'); return; }
+  // Check if user is logged in
+  if (!currentUser) {
+    closeCart();
+    openAuthModal('login');   // Sign in pehle
+    return;
+  }
+  closeCart();
+  openOrderModal();
+}
 
-// ============================================================
+// ══════════════════════════════
+// ORDER MODAL
+// ══════════════════════════════
+function openOrderModal() {
+  if (!cart.length) { showToast('Your cart is empty!'); return; }
+  document.getElementById('orderSummary').innerHTML = cart.map(i => `<div class="flex justify-between"><span>${i.name} × ${i.qty} (${i.size})</span><span class="font-semibold">PKR ${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+  document.getElementById('orderTotal').textContent = `PKR ${cart.reduce((s,i) => s+i.price*i.qty, 0).toLocaleString()}`;
+  // Pre-fill email if logged in
+  if (currentUser) {
+    const name = currentUser.email.split('@')[0];
+    document.getElementById('oFName').value = name;
+  }
+  document.getElementById('orderModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeOrderModal(e) { if (!e || e.target === document.getElementById('orderModal')) { document.getElementById('orderModal').classList.remove('open'); document.body.style.overflow = ''; } }
+function submitOrder() {
+  const fn = document.getElementById('oFName').value.trim(), ln = document.getElementById('oLName').value.trim();
+  const addr = document.getElementById('oAddress').value.trim(), phone = document.getElementById('oPhone').value.trim();
+  const notes = document.getElementById('oNotes').value.trim();
+  if (!fn||!ln||!addr||!phone) { alert('Please fill in all required fields.'); return; }
+  const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
+  let msg = `🛒 *New Order — SoleStride*\n\n👤 *Customer:* ${fn} ${ln}\n📍 *Address:* ${addr}\n📱 *WhatsApp:* ${phone}\n`;
+  if (currentUser) msg += `📧 *Account:* ${currentUser.email}\n`;
+  msg += `\n*Order Items:*\n`;
+  cart.forEach(i => { msg += `• ${i.name} (Size: ${i.size}) × ${i.qty} — PKR ${(i.price*i.qty).toLocaleString()}\n`; });
+  msg += `\n💰 *Total: PKR ${total.toLocaleString()}*\n💵 *Payment: Cash on Delivery*`;
+  if (notes) msg += `\n📝 *Notes:* ${notes}`;
+  window.open(`https://wa.me/923152007950?text=${encodeURIComponent(msg)}`, '_blank');
+  cart = []; saveCart(); updateBadge();
+  document.getElementById('orderModal').classList.remove('open');
+  document.body.style.overflow = '';
+  ['oFName','oLName','oAddress','oPhone','oNotes'].forEach(id => document.getElementById(id).value='');
+  showToast('Order sent on WhatsApp! ✅');
+}
+
+// ══════════════════════════════
 // UTILITIES
-// ============================================================
-function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
-function toggleFaq(btn){const a=btn.nextElementSibling,ic=btn.querySelector('.faq-chevron'),open=a.classList.contains('open');document.querySelectorAll('.faq-answer').forEach(x=>x.classList.remove('open'));document.querySelectorAll('.faq-chevron').forEach(x=>x.classList.remove('rotated'));if(!open){a.classList.add('open');ic.classList.add('rotated');}}
-function startCountdown(){const end=new Date();end.setDate(end.getDate()+3);function tick(){const d=end-new Date();if(d<=0)return;document.getElementById('cDays').textContent=String(Math.floor(d/86400000)).padStart(2,'0');document.getElementById('cHours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');document.getElementById('cMins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');document.getElementById('cSecs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');}tick();setInterval(tick,1000);}
-function observeFadeUp(){const els=document.querySelectorAll('.fade-up:not(.visible)');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.12});els.forEach(el=>obs.observe(el));}
+// ══════════════════════════════
+function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800); }
+function toggleFaq(btn) { const a = btn.nextElementSibling, ic = btn.querySelector('.faq-chevron'), open = a.classList.contains('open'); document.querySelectorAll('.faq-answer').forEach(x => x.classList.remove('open')); document.querySelectorAll('.faq-chevron').forEach(x => x.classList.remove('rotated')); if (!open) { a.classList.add('open'); ic.classList.add('rotated'); } }
+function startCountdown() { const end = new Date(); end.setDate(end.getDate()+3); function tick() { const d=end-new Date(); if(d<=0)return; document.getElementById('cDays').textContent=String(Math.floor(d/86400000)).padStart(2,'0'); document.getElementById('cHours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0'); document.getElementById('cMins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0'); document.getElementById('cSecs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0'); } tick(); setInterval(tick, 1000); }
+function observeFadeUp() { const els = document.querySelectorAll('.fade-up:not(.visible)'); const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);} }); }, { threshold:0.1 }); els.forEach(el => obs.observe(el)); }
 
-updateCartBadge(); startCountdown(); observeFadeUp(); initAll();
+// ══════════════════════════════
+// START
+// ══════════════════════════════
+updateBadge();
+startCountdown();
+observeFadeUp();
+initAll();
 </script>
 </body>
 </html>
