@@ -515,7 +515,7 @@ const SUPABASE_URL = 'https://hmrypwzkenjalttadigx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ZO3nB1XqqTvj9BUrQRUtLg_HMzo68uc';
 
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let allProducts = [], filteredProducts = [];
 let currentProduct = null, modalQty = 1, selectedSize = null;
