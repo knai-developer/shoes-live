@@ -1151,84 +1151,53 @@ function openOrderModal(){
 function closeOrderModal(e){if(!e||e.target===document.getElementById('orderModal')){document.getElementById('orderModal').classList.remove('open');document.body.style.overflow='';}}
 
 // ════════════════════════════════════════
-// ✅ SUBMIT ORDER — Saves to Supabase + Shows success modal
-// ✅ WhatsApp opens in background (no redirect for user)
+// ✅ SUBMIT ORDER
+// Supabase mein save → App pe confirmation → WhatsApp nahi khulega
+// Admin ko Supabase Realtime se notification milegi
 // ════════════════════════════════════════
 async function submitOrder(){
-  const fn=document.getElementById('oFName').value.trim();
-  const ln=document.getElementById('oLName').value.trim();
-  const addr=document.getElementById('oAddress').value.trim();
-  const phone=document.getElementById('oPhone').value.trim();
-  const notes=document.getElementById('oNotes').value.trim();
+  const fn    = document.getElementById('oFName').value.trim();
+  const ln    = document.getElementById('oLName').value.trim();
+  const addr  = document.getElementById('oAddress').value.trim();
+  const phone = document.getElementById('oPhone').value.trim();
+  const notes = document.getElementById('oNotes').value.trim();
 
-  if(!fn||!ln||!addr||!phone){showToast('Please fill all required fields!','error');return;}
-
-  const btn=document.getElementById('submitOrderBtn');
-  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-2"></i>Placing Order...';
-
-  const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
-
-  // ✅ Generate professional order ID
-  const orderId = 'SS-' + Date.now().toString(36).toUpperCase();
-
-  // ✅ Save to Supabase orders table
-  try {
-    const orderData = {
-      order_id:      orderId,
-      user_id:       currentUser?.id || null,
-      user_email:    currentUser?.email || null,
-      customer_name: `${fn} ${ln}`,
-      phone:         phone,
-      address:       addr,
-      items:         JSON.stringify(cart.map(i=>({ name:i.name, size:i.size, qty:i.qty, price:i.price }))),
-      total:         total,
-      status:        'pending',
-      notes:         notes||null,
-    };
-    await sb.from('orders').insert([orderData]);
-  } catch(e) {
-    console.warn('Order save warning:', e.message);
-    // Continue even if DB save fails — WhatsApp still goes
+  if(!fn||!ln||!addr||!phone){
+    showToast('Please fill all required fields!','error'); return;
   }
 
-  // ✅ Build professional WhatsApp message
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' });
-  const timeStr = now.toLocaleTimeString('en-PK', { hour:'2-digit', minute:'2-digit' });
+  const btn = document.getElementById('submitOrderBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Placing Order...';
 
-  let waMsg = `🛍️ *NEW ORDER — SoleStride*\n`;
-  waMsg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  waMsg += `📋 *Order ID:* ${orderId}\n`;
-  waMsg += `📅 *Date:* ${dateStr} at ${timeStr}\n`;
-  waMsg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
-  waMsg += `👤 *CUSTOMER DETAILS*\n`;
-  waMsg += `Name: ${fn} ${ln}\n`;
-  waMsg += `Phone: ${phone}\n`;
-  waMsg += `Address: ${addr}\n`;
-  if(currentUser?.email) waMsg += `Email: ${currentUser.email}\n`;
-  waMsg += `\n🛒 *ORDER ITEMS*\n`;
-  cart.forEach((i,idx) => {
-    waMsg += `${idx+1}. ${i.name}\n`;
-    waMsg += `   Size: ${i.size} | Qty: ${i.qty} | PKR ${(i.price*i.qty).toLocaleString()}\n`;
-  });
-  waMsg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
-  waMsg += `💰 *TOTAL: PKR ${total.toLocaleString()}*\n`;
-  waMsg += `💵 Payment: Cash on Delivery (COD)\n`;
-  if(notes) waMsg += `📝 Notes: ${notes}\n`;
-  waMsg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  waMsg += `_Sent via SoleStride Website_`;
+  const total   = cart.reduce((s,i)=>s+i.price*i.qty, 0);
+  const orderId = 'SS-' + Date.now().toString(36).toUpperCase();
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit'});
 
-  // ✅ Open WhatsApp silently (hidden iframe trick so customer stays on site)
-  const waUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(waMsg)}`;
-  const waFrame = document.createElement('a');
-  waFrame.href = waUrl;
-  waFrame.target = '_blank';
-  waFrame.rel = 'noopener noreferrer';
-  document.body.appendChild(waFrame);
-  waFrame.click();
-  document.body.removeChild(waFrame);
+  // ✅ Save to Supabase — Admin ko realtime notification jaayegi
+  try {
+    await sb.from('orders').insert([{
+      order_id:      orderId,
+      user_id:       currentUser?.id   || null,
+      user_email:    currentUser?.email || null,
+      customer_name: `${fn} ${ln}`,
+      phone,
+      address:       addr,
+      items:         JSON.stringify(cart.map(i=>({
+                       name:i.name, size:i.size, qty:i.qty, price:i.price, img:i.img
+                     }))),
+      total,
+      status:        'pending',
+      notes:         notes || null,
+    }]);
+  } catch(e) {
+    console.warn('Order save warning:', e.message);
+    // Continue even if DB fails — show confirmation anyway
+  }
 
-  // ✅ Save cart snapshot BEFORE clearing (for confirmation screen)
+  // ✅ Save cart snapshot before clearing
   const orderCart = [...cart];
 
   // ✅ Clear cart
@@ -1236,21 +1205,21 @@ async function submitOrder(){
 
   // ✅ Close order modal
   document.getElementById('orderModal').classList.remove('open');
-  document.body.style.overflow='';
+  document.body.style.overflow = '';
 
-  // ✅ Clear form
-  ['oFName','oLName','oAddress','oPhone','oNotes'].forEach(id=>document.getElementById(id).value='');
+  // ✅ Clear form fields
+  ['oFName','oLName','oAddress','oPhone','oNotes']
+    .forEach(id => document.getElementById(id).value='');
 
-  // ✅ Show Shopify-style Order Confirmation Screen
-  showOrderConfirmScreen({
-    orderId, fn, ln, phone, addr, total, orderCart
-  });
+  // ✅ Show Shopify-style confirmation screen — NO WhatsApp opening
+  showOrderConfirmScreen({ orderId, fn, ln, phone, addr, total, orderCart, dateStr, timeStr });
 
-  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check mr-2"></i>Place Order';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Place Order';
 }
 
 // ✅ Show full-page order confirmation (Shopify style)
-function showOrderConfirmScreen({ orderId, fn, ln, phone, addr, total, orderCart }) {
+function showOrderConfirmScreen({ orderId, fn, ln, phone, addr, total, orderCart, dateStr, timeStr }) {
   // Fill confirmation details
   document.getElementById('confirmOrderId').textContent    = `Confirmation #${orderId}`;
   document.getElementById('confirmThankYou').textContent   = `Thank you, ${fn}!`;
@@ -1259,7 +1228,7 @@ function showOrderConfirmScreen({ orderId, fn, ln, phone, addr, total, orderCart
   document.getElementById('confirmBilling').innerHTML      = `${fn} ${ln}<br>${addr}<br>Pakistan`;
   document.getElementById('confirmSubtotal').textContent   = `PKR ${total.toLocaleString()}`;
   document.getElementById('confirmTotal').textContent      = `PKR ${total.toLocaleString()}`;
-  document.getElementById('confirmAmountLabel').textContent= `Rs ${total.toLocaleString()} PKR`;
+  document.getElementById('confirmAmountLabel').textContent= `Rs ${total.toLocaleString()} PKR · ${dateStr||''} ${timeStr||''}`;
 
   // Fill order items
   document.getElementById('confirmItems').innerHTML = orderCart.map(item => {
