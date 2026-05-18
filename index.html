@@ -89,13 +89,45 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .load-more-btn{background:#1a1a2e;color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;margin:32px auto 0;transition:background 0.2s;font-family:'Montserrat',sans-serif;}
 .load-more-btn:hover{background:#e94560;}
 .load-more-btn:disabled{background:#9ca3af;cursor:not-allowed;}
-/* ── ORDER SUCCESS MODAL ── */
-#orderSuccessModal{position:fixed;inset:0;background:rgba(26,26,46,0.7);z-index:20001;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-#orderSuccessModal.open{opacity:1;pointer-events:auto;}
-.success-box{background:#fff;border-radius:24px;padding:48px 36px;max-width:440px;width:100%;text-align:center;transform:scale(0.9);transition:transform 0.3s;}
-#orderSuccessModal.open .success-box{transform:scale(1);}
-.success-icon{width:80px;height:80px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);}
-@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
+/* ── ORDER CONFIRMATION (Shopify Style) ── */
+#orderConfirmScreen{
+  position:fixed;inset:0;background:#f8f7f4;z-index:20001;
+  display:none;overflow-y:auto;
+  animation:slideUp 0.4s ease;
+}
+#orderConfirmScreen.open{display:block;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.confirm-header{background:#1a1a2e;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+.confirm-header .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;letter-spacing:2px;}
+.confirm-header .logo span{color:#e94560;}
+.confirm-body{max-width:640px;margin:0 auto;padding:32px 20px 60px;}
+.confirm-check{width:52px;height:52px;border-radius:50%;background:#dcfce7;border:3px solid #16a34a;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.confirm-id{font-size:13px;color:#9ca3af;margin-bottom:6px;}
+.confirm-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#1a1a2e;margin-bottom:24px;}
+.confirm-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:20px;margin-bottom:16px;}
+.confirm-card h3{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:12px;}
+.confirm-card p{font-size:13px;color:#6b7280;line-height:1.7;}
+.confirm-card .label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.confirm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:500px){.confirm-grid{grid-template-columns:1fr;}}
+.confirm-item-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6;}
+.confirm-item-row:last-child{border-bottom:none;}
+.confirm-item-img{width:52px;height:52px;border-radius:10px;object-fit:cover;border:2px solid #e5e7eb;flex-shrink:0;}
+.confirm-item-name{font-size:13px;font-weight:600;color:#1a1a2e;}
+.confirm-item-sub{font-size:12px;color:#9ca3af;margin-top:2px;}
+.confirm-item-price{font-size:13px;font-weight:700;color:#e94560;margin-left:auto;}
+.confirm-total-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#6b7280;}
+.confirm-total-row.final{font-weight:700;font-size:15px;color:#1a1a2e;border-top:2px solid #e5e7eb;margin-top:4px;padding-top:12px;}
+.btn-continue{width:100%;background:#1a1a2e;color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:background 0.2s;margin-bottom:12px;}
+.btn-continue:hover{background:#e94560;}
+.btn-whatsapp-chat{width:100%;background:#25D366;color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.2s;text-decoration:none;}
+.btn-whatsapp-chat:hover{background:#1ebe5d;}
+.confirm-updates-box{display:flex;align-items:center;gap:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;}
+.confirm-updates-box i{font-size:20px;color:#16a34a;flex-shrink:0;}
+/* ── WHATSAPP FLOAT BUTTON ── */
+#waFloat{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;align-items:center;gap:10px;background:#25D366;color:#fff;border:none;border-radius:50px;padding:12px 20px 12px 14px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(37,211,102,0.4);transition:all 0.3s;font-family:'Montserrat',sans-serif;text-decoration:none;}
+#waFloat:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(37,211,102,0.5);}
+#waFloat i{font-size:22px;}
 /* ── AUTH MODAL ── */
 #authModal{position:fixed;inset:0;background:rgba(26,26,46,0.7);z-index:20000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 #authModal.open{opacity:1;pointer-events:auto;}
@@ -120,6 +152,7 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .user-menu.open{display:block;}
 .user-menu-item{padding:12px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#374151;transition:background 0.15s;}
 .user-menu-item:hover{background:#f9fafb;}
+
 </style>
 </head>
 <body>
@@ -127,15 +160,102 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 <!-- TOAST -->
 <div id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
 
-<!-- ORDER SUCCESS MODAL -->
-<div id="orderSuccessModal">
-  <div class="success-box">
-    <div class="success-icon"><i class="fa-solid fa-check" style="font-size:32px;color:#16a34a;"></i></div>
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;color:#1a1a2e;margin-bottom:8px;">Order Placed!</h2>
-    <p style="color:#6b7280;font-size:14px;line-height:1.7;margin-bottom:6px;">Your order has been received successfully.</p>
-    <p style="color:#6b7280;font-size:13px;line-height:1.7;margin-bottom:24px;">Our team will contact you on WhatsApp within <strong style="color:#1a1a2e;">1-2 hours</strong> to confirm your order.</p>
-    <div id="successOrderId" style="background:#f8f7f4;border-radius:10px;padding:12px;margin-bottom:20px;font-size:13px;color:#6b7280;"></div>
-    <button onclick="closeSuccessModal()" class="btn-solid w-full" style="width:100%;padding:13px;font-size:14px;border-radius:12px;">Continue Shopping <i class="fa-solid fa-arrow-right ml-2"></i></button>
+<!-- ✅ WHATSAPP FLOAT BUTTON — always visible -->
+<a id="waFloat" href="https://wa.me/923152007950" target="_blank" rel="noopener">
+  <i class="fa-brands fa-whatsapp"></i>
+  <span>Chat with us</span>
+</a>
+
+<!-- ✅ ORDER CONFIRMATION SCREEN — Shopify Style (full page) -->
+<div id="orderConfirmScreen">
+  <!-- Header -->
+  <div class="confirm-header">
+    <div class="logo">Sole<span>Stride</span></div>
+    <a href="#" onclick="closeConfirmScreen()" style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none;">
+      <i class="fa-solid fa-xmark" style="margin-right:5px;"></i>Close
+    </a>
+  </div>
+
+  <!-- Body -->
+  <div class="confirm-body">
+    <!-- Check + Thank You -->
+    <div class="confirm-check">
+      <i class="fa-solid fa-check" style="font-size:22px;color:#16a34a;"></i>
+    </div>
+    <p class="confirm-id" id="confirmOrderId">Confirmation #—</p>
+    <h1 class="confirm-title" id="confirmThankYou">Thank you!</h1>
+
+    <!-- Order Confirmed box -->
+    <div class="confirm-card" style="margin-bottom:16px;">
+      <h3 style="display:flex;align-items:center;gap:10px;">
+        <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:18px;"></i>
+        Your order is confirmed
+      </h3>
+      <p>Pay When You Receive Your Order</p>
+    </div>
+
+    <!-- Order Updates -->
+    <div class="confirm-card confirm-updates-box" style="margin-bottom:16px;">
+      <i class="fa-solid fa-envelope-open-text"></i>
+      <div>
+        <p style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:2px;">Order Updates</p>
+        <p style="font-size:12px;color:#6b7280;">You'll receive order updates on WhatsApp. Our team will contact you within 1–2 hours.</p>
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="confirm-card" style="margin-bottom:16px;">
+      <h3>Order Details</h3>
+      <div id="confirmItems"></div>
+      <!-- Totals -->
+      <div style="margin-top:8px;">
+        <div class="confirm-total-row"><span>Subtotal</span><span id="confirmSubtotal">PKR 0</span></div>
+        <div class="confirm-total-row"><span>Shipping</span><span style="color:#16a34a;font-weight:600;">Free</span></div>
+        <div class="confirm-total-row final"><span>Total</span><span id="confirmTotal" style="color:#e94560;">PKR 0</span></div>
+      </div>
+    </div>
+
+    <!-- Customer Info Grid -->
+    <div class="confirm-grid">
+      <div class="confirm-card">
+        <div class="label">Contact Information</div>
+        <p id="confirmPhone">—</p>
+        <div class="label" style="margin-top:12px;">Shipping Method</div>
+        <p>Standard Delivery (3–5 days)</p>
+      </div>
+      <div class="confirm-card">
+        <div class="label">Payment Method</div>
+        <p style="display:flex;align-items:center;gap:8px;">
+          <span style="background:#f3f4f6;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;">COD</span>
+          Cash on Delivery
+        </p>
+        <div id="confirmAmountLabel" style="font-size:12px;color:#6b7280;margin-top:4px;"></div>
+      </div>
+    </div>
+
+    <div class="confirm-grid">
+      <div class="confirm-card">
+        <div class="label">Shipping Address</div>
+        <p id="confirmAddress">—</p>
+      </div>
+      <div class="confirm-card">
+        <div class="label">Billing Address</div>
+        <p id="confirmBilling">—</p>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn-continue" onclick="closeConfirmScreen()">
+      <i class="fa-solid fa-bag-shopping" style="margin-right:8px;"></i>Continue Shopping
+    </button>
+    <a class="btn-whatsapp-chat" href="https://wa.me/923152007950" target="_blank" rel="noopener">
+      <i class="fa-brands fa-whatsapp" style="font-size:20px;"></i>
+      <span>Chat with us on WhatsApp</span>
+    </a>
+
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:20px;">
+      Need help? <a href="https://wa.me/923152007950" target="_blank" style="color:#e94560;">Contact us</a>
+    </p>
   </div>
 </div>
 
@@ -517,22 +637,94 @@ const ADMIN_WHATSAPP = '923152007950'; // Admin ka WhatsApp number (country code
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ════════════════════════════════════════
-// ✅ CACHE CONFIG
-// ════════════════════════════════════════
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// ════════════════════════════════════════════════════════
+// ✅ PERMANENT CACHE — IndexedDB
+// Products sirf 1 baar Supabase se load honge
+// Dobara kabhi bhi — cache se (fast, zero requests)
+// Sirf tab update hoga jab admin new product add kare (Realtime)
+// ════════════════════════════════════════════════════════
 
-function cacheSet(key, data) {
-  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+const DB_NAME    = 'SoleStrideDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'cache';
+let _db = null;
+
+// IndexedDB open karo
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (_db) { resolve(_db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+    req.onerror   = () => reject(req.error);
+  });
 }
-function cacheGet(key) {
+
+// Save to IndexedDB (no expiry — permanent until we clear)
+async function cacheSet(key, data) {
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
-    return data;
-  } catch(e) { return null; }
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put({ key, data, ts: Date.now() });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror    = () => resolve(false);
+    });
+  } catch(e) {
+    // Fallback to localStorage
+    try { localStorage.setItem('fb_'+key, JSON.stringify({ data, ts: Date.now() })); } catch(x) {}
+  }
+}
+
+// Get from IndexedDB
+async function cacheGet(key) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx  = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(key);
+      req.onsuccess = () => resolve(req.result?.data || null);
+      req.onerror   = () => resolve(null);
+    });
+  } catch(e) {
+    // Fallback to localStorage
+    try {
+      const raw = localStorage.getItem('fb_'+key);
+      return raw ? JSON.parse(raw).data : null;
+    } catch(x) { return null; }
+  }
+}
+
+// Delete from cache (realtime update ke liye)
+async function cacheClear(key) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror    = () => resolve(false);
+    });
+  } catch(e) {
+    try { localStorage.removeItem('fb_'+key); } catch(x) {}
+  }
+}
+
+// Clear all cache (admin ne sab delete kiya ho tab)
+async function cacheClearAll() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete = () => resolve(true);
+    });
+  } catch(e) {}
 }
 
 // ════════════════════════════════════════
@@ -640,25 +832,79 @@ async function initAll() {
 }
 
 // ════════════════════════════════════════
-// ✅ PRODUCTS — with Cache + Pagination
+// ✅ PRODUCTS — Permanent Cache + Realtime
+// Supabase se SIRF 1 BAAR load hoga
+// Dobara kabhi bhi → IndexedDB se (instant, zero Supabase requests)
+// Realtime se sirf tab update hoga jab admin kuch change kare
 // ════════════════════════════════════════
 async function loadProducts() {
-  // Check cache first
-  const cached = cacheGet('ss_products');
-  if (cached) {
+  // Step 1: Cache check karo (IndexedDB — permanent)
+  const cached = await cacheGet('ss_products');
+  if (cached && cached.length > 0) {
+    // Cache mein hai → turant show karo (zero Supabase request)
     allProducts = cached;
     applyFilter(currentFilter);
-    return;
+    return; // ✅ Supabase pe request nahi jaayegi
   }
+
+  // Step 2: Sirf tab Supabase se load karo jab cache empty ho
+  // (pehli baar ya realtime ne clear kiya ho)
   try {
-    const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false });
+    const { data, error } = await sb
+      .from('products')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
     if (error) throw error;
     allProducts = data || [];
-    cacheSet('ss_products', allProducts); // Save to cache
+
+    // Permanent cache mein save karo
+    await cacheSet('ss_products', allProducts);
     applyFilter(currentFilter);
+
   } catch(e) {
-    document.getElementById('productGrid').innerHTML = `<div class="empty-state col-span-3"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i><p style="color:#ef4444;font-weight:600;">Products load failed. Check Supabase config.</p></div>`;
+    if (!allProducts.length) {
+      document.getElementById('productGrid').innerHTML =
+        `<div class="empty-state col-span-3">
+           <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i>
+           <p style="color:#ef4444;font-weight:600;">Products load failed. Check Supabase config.</p>
+         </div>`;
+    }
   }
+}
+
+// ✅ Supabase Realtime — Admin product add/edit/delete kare → instant update
+// Sirf is waqt Supabase request jaayegi (not on every page load)
+function setupRealtimeProducts() {
+  sb.channel('products-realtime')
+    .on('postgres_changes', {
+      event: '*',       // INSERT, UPDATE, DELETE
+      schema: 'public',
+      table: 'products'
+    }, async (payload) => {
+      // Cache clear karo
+      await cacheClear('ss_products');
+
+      // Fresh data lo Supabase se (sirf yahan request jaayegi)
+      try {
+        const { data } = await sb
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        allProducts = data || [];
+        await cacheSet('ss_products', allProducts);
+        applyFilter(currentFilter);
+
+        // Customer ko subtle notification
+        if (payload.eventType === 'INSERT') {
+          showToast('New product just added! 🔥', 'success');
+        }
+      } catch(e) {}
+    })
+    .subscribe();
 }
 
 function applyFilter(cat) {
@@ -742,28 +988,26 @@ function loadMore() {
 //    ✅ FIX: Category cards use ONLY admin-set image
 //    No automatic product image fallback (only placeholder)
 // ════════════════════════════════════════
+// ════════════════════════════════════════
+// ✅ SECTIONS — Permanent cache (hero/story/category images)
+// Sirf 1 baar Supabase se, phir IndexedDB se
+// ════════════════════════════════════════
 async function loadSections() {
-  const cached = cacheGet('ss_sections');
-  let map = cached;
+  let map = await cacheGet('ss_sections');
   if (!map) {
     try {
       const { data } = await sb.from('site_sections').select('*');
       map = {};
       (data||[]).forEach(s => map[s.section_key] = s);
-      cacheSet('ss_sections', map);
+      await cacheSet('ss_sections', map);
     } catch(e) { map = {}; }
   }
   window._sectionMap = map;
-
-  // Hero background
   if (map.hero?.image_url) {
     document.getElementById('hero').style.backgroundImage = `url('${map.hero.image_url}')`;
   }
-  // Story image
   if (map.story?.image_url) document.getElementById('storyImg').src = map.story.image_url;
-  // Premium image
   if (map.premium_quality?.image_url) document.getElementById('premiumImg').src = map.premium_quality.image_url;
-
   renderCategoryCards(map);
 }
 
@@ -793,14 +1037,15 @@ function renderCategoryCards(map) {
 // ════════════════════════════════════════
 // GALLERY + INSTAGRAM — with Cache
 // ════════════════════════════════════════
+// ✅ Gallery — permanent cache
 async function loadGallery() {
   const g = document.getElementById('galleryGrid');
-  let data = cacheGet('ss_gallery');
+  let data = await cacheGet('ss_gallery');
   if (!data) {
     try {
       const res = await sb.from('gallery_images').select('*').eq('is_active',true).order('position');
       data = res.data || [];
-      cacheSet('ss_gallery', data);
+      await cacheSet('ss_gallery', data);
     } catch(e) { data = []; }
   }
   if (!data.length) { g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><i class="fa-solid fa-images" style="font-size:36px;display:block;margin-bottom:10px;"></i><p>Gallery images coming soon!</p></div>`; return; }
@@ -813,14 +1058,15 @@ async function loadGallery() {
   observeFadeUp();
 }
 
+// ✅ Instagram — permanent cache
 async function loadInstagram() {
   const g = document.getElementById('instaGrid');
-  let data = cacheGet('ss_insta');
+  let data = await cacheGet('ss_insta');
   if (!data) {
     try {
       const res = await sb.from('instagram_images').select('*').eq('is_active',true).order('position');
       data = res.data || [];
-      cacheSet('ss_insta', data);
+      await cacheSet('ss_insta', data);
     } catch(e) { data = []; }
   }
   if (!data.length) { g.innerHTML=`<div class="empty-state col-span-4"><i class="fa-brands fa-instagram text-accent"></i><p>Instagram images coming soon!</p></div>`; return; }
@@ -982,6 +1228,9 @@ async function submitOrder(){
   waFrame.click();
   document.body.removeChild(waFrame);
 
+  // ✅ Save cart snapshot BEFORE clearing (for confirmation screen)
+  const orderCart = [...cart];
+
   // ✅ Clear cart
   cart=[]; saveCart(); updateBadge();
 
@@ -992,18 +1241,55 @@ async function submitOrder(){
   // ✅ Clear form
   ['oFName','oLName','oAddress','oPhone','oNotes'].forEach(id=>document.getElementById(id).value='');
 
-  // ✅ Show Order Success Modal (instead of WhatsApp redirect)
-  document.getElementById('successOrderId').innerHTML =
-    `<strong>Order ID:</strong> ${orderId}<br><strong>Name:</strong> ${fn} ${ln}<br><strong>Total:</strong> PKR ${total.toLocaleString()}`;
-  document.getElementById('orderSuccessModal').classList.add('open');
+  // ✅ Show Shopify-style Order Confirmation Screen
+  showOrderConfirmScreen({
+    orderId, fn, ln, phone, addr, total, orderCart
+  });
 
   btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check mr-2"></i>Place Order';
 }
 
-function closeSuccessModal(){
-  document.getElementById('orderSuccessModal').classList.remove('open');
-  document.body.style.overflow='';
+// ✅ Show full-page order confirmation (Shopify style)
+function showOrderConfirmScreen({ orderId, fn, ln, phone, addr, total, orderCart }) {
+  // Fill confirmation details
+  document.getElementById('confirmOrderId').textContent    = `Confirmation #${orderId}`;
+  document.getElementById('confirmThankYou').textContent   = `Thank you, ${fn}!`;
+  document.getElementById('confirmPhone').textContent      = phone;
+  document.getElementById('confirmAddress').innerHTML      = `${fn} ${ln}<br>${addr}<br>Pakistan`;
+  document.getElementById('confirmBilling').innerHTML      = `${fn} ${ln}<br>${addr}<br>Pakistan`;
+  document.getElementById('confirmSubtotal').textContent   = `PKR ${total.toLocaleString()}`;
+  document.getElementById('confirmTotal').textContent      = `PKR ${total.toLocaleString()}`;
+  document.getElementById('confirmAmountLabel').textContent= `Rs ${total.toLocaleString()} PKR`;
+
+  // Fill order items
+  document.getElementById('confirmItems').innerHTML = orderCart.map(item => {
+    const img = item.img || `https://placehold.co/52x52/1a1a2e/fff?text=Shoe`;
+    return `<div class="confirm-item-row">
+      <img src="${img}" class="confirm-item-img"
+           onerror="this.src='https://placehold.co/52x52/1a1a2e/fff?text=Shoe'" loading="lazy"/>
+      <div style="flex:1;">
+        <div class="confirm-item-name">${item.name}</div>
+        <div class="confirm-item-sub">Size: ${item.size} · Qty: ${item.qty}</div>
+      </div>
+      <div class="confirm-item-price">PKR ${(item.price * item.qty).toLocaleString()}</div>
+    </div>`;
+  }).join('');
+
+  // Show screen
+  document.getElementById('orderConfirmScreen').classList.add('open');
+  document.getElementById('orderConfirmScreen').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
 }
+
+function closeConfirmScreen() {
+  document.getElementById('orderConfirmScreen').classList.remove('open');
+  document.body.style.overflow = '';
+  // Scroll to top of store
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Keep old name working too
+function closeSuccessModal() { closeConfirmScreen(); }
 
 // ════════════════════════════════════════
 // UTILITIES
@@ -1021,7 +1307,120 @@ function toggleFaq(btn){const a=btn.nextElementSibling,ic=btn.querySelector('.fa
 function startCountdown(){const end=new Date();end.setDate(end.getDate()+3);function tick(){const d=end-new Date();if(d<=0)return;document.getElementById('cDays').textContent=String(Math.floor(d/86400000)).padStart(2,'0');document.getElementById('cHours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');document.getElementById('cMins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');document.getElementById('cSecs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');}tick();setInterval(tick,1000);}
 function observeFadeUp(){const els=document.querySelectorAll('.fade-up:not(.visible)');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.08});els.forEach(el=>obs.observe(el));}
 
-updateBadge(); startCountdown(); observeFadeUp(); initAll();
+// ════════════════════════════════════════
+// ✅ ALL REALTIME LISTENERS
+// Jab bhi admin kuch bhi change kare →
+// Cache clear → Fresh data → Customer ko instantly dikhta hai
+// Supabase pe sirf 1 request jaati hai (not on every load)
+// ════════════════════════════════════════
+function setupAllRealtime() {
+
+  // 1. PRODUCTS — Add/Edit/Delete
+  sb.channel('rt-products')
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'products'
+    }, async (payload) => {
+      await cacheClear('ss_products');
+      try {
+        const { data } = await sb.from('products').select('*')
+          .eq('is_active', true).order('created_at', { ascending: false });
+        allProducts = data || [];
+        await cacheSet('ss_products', allProducts);
+        applyFilter(currentFilter);
+        if (payload.eventType === 'INSERT') {
+          showToast('New product just added! 🔥', 'success');
+        }
+      } catch(e) {}
+    })
+    .subscribe();
+
+  // 2. SITE SECTIONS — Hero/Story/Category/Premium image change
+  sb.channel('rt-sections')
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'site_sections'
+    }, async (payload) => {
+      await cacheClear('ss_sections');
+      // Reload sections silently
+      try {
+        const { data } = await sb.from('site_sections').select('*');
+        const map = {};
+        (data||[]).forEach(s => map[s.section_key] = s);
+        await cacheSet('ss_sections', map);
+        window._sectionMap = map;
+        // Apply changes
+        if (map.hero?.image_url) {
+          document.getElementById('hero').style.backgroundImage = `url('${map.hero.image_url}')`;
+        } else {
+          document.getElementById('hero').style.backgroundImage = '';
+        }
+        if (map.story?.image_url) document.getElementById('storyImg').src = map.story.image_url;
+        if (map.premium_quality?.image_url) document.getElementById('premiumImg').src = map.premium_quality.image_url;
+        renderCategoryCards(map);
+      } catch(e) {}
+    })
+    .subscribe();
+
+  // 3. GALLERY — Image add/delete
+  sb.channel('rt-gallery')
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'gallery_images'
+    }, async () => {
+      await cacheClear('ss_gallery');
+      try {
+        const { data } = await sb.from('gallery_images').select('*')
+          .eq('is_active', true).order('position');
+        await cacheSet('ss_gallery', data || []);
+        // Re-render gallery
+        const g = document.getElementById('galleryGrid');
+        const items = data || [];
+        if (!items.length) return;
+        g.innerHTML = items.map((img,i) => `
+          <div class="gallery-item${i%2===1?' mt-8':''}">
+            <img src="${img.image_url}" alt="${img.caption||'Gallery'}" loading="lazy"
+                 onerror="this.src='https://placehold.co/400x220/e94560/fff?text=Gallery'"/>
+            <div class="g-overlay"><i class="fa-solid fa-expand g-icon"></i></div>
+            ${img.caption?`<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,26,46,0.7));padding:10px 13px;">
+              <p style="color:#fff;font-size:12px;font-weight:600;">${img.caption}</p></div>`:''}
+          </div>`).join('');
+        observeFadeUp();
+      } catch(e) {}
+    })
+    .subscribe();
+
+  // 4. INSTAGRAM — Image add/delete
+  sb.channel('rt-instagram')
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'instagram_images'
+    }, async () => {
+      await cacheClear('ss_insta');
+      try {
+        const { data } = await sb.from('instagram_images').select('*')
+          .eq('is_active', true).order('position');
+        await cacheSet('ss_insta', data || []);
+        // Re-render instagram
+        const g = document.getElementById('instaGrid');
+        const items = data || [];
+        if (!items.length) return;
+        g.innerHTML = items.map((img,i) => `
+          <a href="${img.link_url||'#'}" target="_blank" class="insta-item">
+            <img src="${img.image_url}" alt="Instagram Post ${i+1}" loading="lazy"
+                 onerror="this.src='https://placehold.co/300x200/1a1a2e/fff?text=Instagram'"/>
+            <div class="i-overlay"><i class="fa-brands fa-instagram i-icon"></i></div>
+          </a>`).join('');
+      } catch(e) {}
+    })
+    .subscribe();
+}
+
+// ════════════════════════════════════════
+// START
+// ════════════════════════════════════════
+updateBadge();
+startCountdown();
+observeFadeUp();
+initAll();
+setupAllRealtime(); // ✅ Sab kuch realtime
+
 </script>
 </body>
 </html>
