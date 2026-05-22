@@ -741,13 +741,7 @@ tr:last-child td{border-bottom:none;}
 const SUPABASE_URL = 'https://hmrypwzkenjalttadigx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ZO3nB1XqqTvj9BUrQRUtLg_HMzo68uc';
 const BUCKET        = 'product-images';
-
-// ✅ ADMIN EMAILS — Sirf yeh log admin dashboard access kar sakte hain
-// Yahan apna admin email dalen (lowercase mein)
-const ADMIN_EMAILS = [
-  'm.arshmanalvi@gmail.com',
-  // 'another@email.com', // aur admins add kar sakte hain
-];
+// ✅ Admin emails hardcoded nahi — dynamically Supabase admin_users table se check hoga
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -757,23 +751,53 @@ let galleryItems = [], instaItems = [];
 let addImgFile = null, editImgFile = null, secImgFile = null, mediaImgFile = null;
 
 // ══════════════════════════════════════════
-// ✅ AUTH — Admin-only access
 // ══════════════════════════════════════════
+// ✅ 1. DYNAMIC ADMIN CHECK — Supabase se
+// Hardcoded emails nahi — Supabase admin_users table se
+// ══════════════════════════════════════════
+
+// Admin check: user ka role Supabase user_metadata ya admin_users table se
+async function isAdminUser(user) {
+  if (!user) return false;
+  try {
+    // Method 1: Supabase admin_users table check karo
+    const { data, error } = await sb
+      .from('admin_users')
+      .select('id')
+      .eq('email', user.email.toLowerCase())
+      .single();
+    if (!error && data) return true;
+
+    // Method 2: user_metadata mein role check karo (Supabase dashboard se set hota hai)
+    if (user.user_metadata?.role === 'admin') return true;
+    if (user.app_metadata?.role === 'admin') return true;
+
+    return false;
+  } catch(e) {
+    return false;
+  }
+}
+
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
   if (!email || !pass) { showLoginErr('Please enter email and password.'); return; }
 
-  // ✅ Check admin email BEFORE trying Supabase
-  if (!ADMIN_EMAILS.includes(email)) {
-    showLoginErr('Access denied. This email is not authorized as admin.');
-    return;
-  }
-
   setLoginLoad(true);
   try {
+    // Step 1: Supabase se login karo
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
+
+    // Step 2: ✅ Dynamically check karo — admin hai ya nahi
+    const adminOk = await isAdminUser(data.user);
+    if (!adminOk) {
+      // Admin nahi hai — logout karo aur error show karo
+      await sb.auth.signOut();
+      showLoginErr('Access denied. You are not authorized as admin. Contact your administrator.');
+      return;
+    }
+
     showApp(data.user);
   } catch(e) {
     showLoginErr(e.message === 'Invalid login credentials'
@@ -807,18 +831,20 @@ async function doLogout() {
   document.getElementById('loginPass').value = '';
   document.getElementById('loginErr').style.display = 'none';
 }
-// Auto-restore session
+
+// ✅ Auto-restore session — dynamically admin check karo
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
-    // ✅ Verify admin email even on auto-restore
-    if (ADMIN_EMAILS.includes(session.user.email?.toLowerCase())) {
+    const adminOk = await isAdminUser(session.user);
+    if (adminOk) {
       showApp(session.user);
     } else {
       await sb.auth.signOut();
     }
   }
 })();
+
 async function changePass() {
   const np = document.getElementById('sNewPass').value.trim();
   const cp = document.getElementById('sConfPass').value.trim();
@@ -1086,17 +1112,82 @@ function renderOrdersTable() {
   }).join('');
 }
 
-async function updateOrderStatus(id,status){
-  try{
-    const{error}=await sb.from('orders').update({status}).eq('id',id); if(error) throw error;
-    const o=allOrders.find(x=>x.id===id); if(o) o.status=status;
-    showToast(`✅ Status: "${status}"`,'success');
+// ══════════════════════════════════════════
+// ✅ 2. UPDATE ORDER STATUS + STOCK UPDATE
+// Confirmed → stock minus karo
+// Cancelled (from confirmed) → stock wapas add karo
+// ══════════════════════════════════════════
+async function updateOrderStatus(id, status) {
+  try {
+    const order = allOrders.find(x => x.id === id);
+    if (!order) return;
+
+    const prevStatus = order.status;
+
+    // Step 1: Order status update karo
+    const { error } = await sb.from('orders').update({ status }).eq('id', id);
+    if (error) throw error;
+
+    // Step 2: ✅ Stock update logic
+    // Parse order items
+    let items = [];
+    try { items = JSON.parse(order.items || '[]'); } catch(e) {}
+
+    if (items.length > 0) {
+      // Case A: pending/other → confirmed = stock MINUS karo
+      if (status === 'confirmed' && prevStatus !== 'confirmed') {
+        for (const item of items) {
+          // Product dhundho by name (items mein id nahi hoti usually)
+          const prod = allProducts.find(p => p.name === item.name);
+          if (prod) {
+            const newStock = Math.max(0, (prod.stock || 0) - (item.qty || 1));
+            await sb.from('products').update({ stock: newStock }).eq('id', prod.id);
+            prod.stock = newStock; // local state bhi update karo
+          }
+        }
+        showToast(`✅ Order confirmed! Stock updated.`, 'success');
+      }
+
+      // Case B: confirmed → cancelled = stock WAPAS add karo
+      else if (status === 'cancelled' && prevStatus === 'confirmed') {
+        for (const item of items) {
+          const prod = allProducts.find(p => p.name === item.name);
+          if (prod) {
+            const newStock = (prod.stock || 0) + (item.qty || 1);
+            await sb.from('products').update({ stock: newStock }).eq('id', prod.id);
+            prod.stock = newStock;
+          }
+        }
+        showToast(`✅ Order cancelled. Stock restored.`, 'info');
+      }
+
+      else {
+        showToast(`✅ Status: "${status}"`, 'success');
+      }
+
+      // Products table refresh karo
+      await loadProducts();
+      renderProdTable();
+      renderDash();
+    } else {
+      showToast(`✅ Status: "${status}"`, 'success');
+    }
+
+    // Order local state update
+    order.status = status;
     renderDashOrders();
-    const p=allOrders.filter(x=>x.status==='pending').length;
-    document.getElementById('pendingBadge').textContent=p;
-    document.getElementById('pendingBadge').style.display=p>0?'inline':'none';
-    document.getElementById('sPending').textContent=p;
-  }catch(e){showToast('❌ '+e.message,'error');}
+    renderOrdersTable();
+
+    // Pending badge update
+    const p = allOrders.filter(x => x.status === 'pending').length;
+    document.getElementById('pendingBadge').textContent   = p;
+    document.getElementById('pendingBadge').style.display = p > 0 ? 'inline' : 'none';
+    document.getElementById('sPending').textContent       = p;
+
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+    console.error('updateOrderStatus error:', e);
+  }
 }
 
 function viewOrder(id){
