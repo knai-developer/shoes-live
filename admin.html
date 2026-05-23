@@ -352,6 +352,7 @@ tr:last-child td{border-bottom:none;}
       <div class="s-title">Sole<em>Stride</em></div>
       <div class="s-sub">Admin Panel v5.0</div>
       <div class="s-email" id="adminEmailSidebar">—</div>
+      <div id="adminRoleBadge" style="font-size:10px;font-weight:700;margin-top:4px;color:rgba(255,255,255,0.5);"></div>
     </div>
     <nav class="sidebar-nav">
       <!-- View Store -->
@@ -400,6 +401,10 @@ tr:last-child td{border-bottom:none;}
       <div class="nav-lbl">Settings</div>
       <div class="nav-item" onclick="showPage('settings',this)">
         <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </div>
+      <!-- ✅ Sirf main_admin ko dikhega -->
+      <div class="nav-item" id="mainAdminOnly" style="display:none;" onclick="showPage('manage-admins',this)">
+        <i class="fa-solid fa-user-shield"></i><span>Manage Admins</span>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -624,6 +629,60 @@ tr:last-child td{border-bottom:none;}
         </div>
       </div>
     </div>
+
+    <!-- ── MANAGE ADMINS (main_admin only) ── -->
+    <div class="page" id="page-manage-admins">
+      <div class="sec-hdr"><h2>Manage Admins</h2></div>
+      <div class="info-box">
+        <i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>
+        Sirf <strong>Main Admin</strong> yeh page dekh aur manage kar sakta hai.
+        Yahan se second admins add/remove karein.
+      </div>
+
+      <!-- Add New Admin Form -->
+      <div class="form-card" style="max-width:520px;margin-bottom:20px;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:14px;">
+          <i class="fa-solid fa-user-plus" style="color:var(--accent);margin-right:8px;"></i>Add New Admin
+        </h3>
+        <div class="warn-box" style="font-size:12px;">
+          <i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>
+          New admin ka Supabase account pehle se hona chahiye (index.html pe Sign Up se).
+          Unka User ID Supabase → Authentication → Users se copy karein.
+        </div>
+        <div class="form-row">
+          <label>Admin Name *</label>
+          <input type="text" id="newAdminName" placeholder="e.g. Sara Khan">
+        </div>
+        <div class="form-row">
+          <label>Admin Email *</label>
+          <input type="email" id="newAdminEmail" placeholder="admin2@example.com">
+        </div>
+        <div class="form-row">
+          <label>User ID (UUID) *</label>
+          <input type="text" id="newAdminUserId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+          <p class="form-hint">Supabase → Authentication → Users → Email pe click → UUID copy karein</p>
+        </div>
+        <button class="btn-primary" onclick="addNewAdmin()" id="addAdminBtn">
+          <i class="fa-solid fa-user-plus"></i> Add Admin
+        </button>
+      </div>
+
+      <!-- Admins List -->
+      <div class="table-wrap" style="max-width:720px;">
+        <div style="padding:14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;">All Admins</h3>
+          <button class="btn-secondary" onclick="loadAdminsList()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Added</th><th>Action</th></tr></thead>
+            <tbody id="adminsTableBody">
+              <tr class="empty-row"><td colspan="6"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div><!-- /main-wrap -->
 </div><!-- /app -->
 
@@ -752,30 +811,41 @@ let addImgFile = null, editImgFile = null, secImgFile = null, mediaImgFile = nul
 
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════
-// ✅ 1. DYNAMIC ADMIN CHECK — Supabase se
-// Hardcoded emails nahi — Supabase admin_users table se
+// ✅ DYNAMIC ADMIN CHECK — Supabase admin_users table se
+// main_admin + admin dono ko access milega
+// Normal users ko bilkul access nahi
 // ══════════════════════════════════════════
 
-// Admin check: user ka role Supabase user_metadata ya admin_users table se
+// Check karo: kya yeh user admin hai?
 async function isAdminUser(user) {
   if (!user) return false;
   try {
-    // Method 1: Supabase admin_users table check karo
     const { data, error } = await sb
       .from('admin_users')
-      .select('id')
-      .eq('email', user.email.toLowerCase())
+      .select('id, role, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
       .single();
-    if (!error && data) return true;
 
-    // Method 2: user_metadata mein role check karo (Supabase dashboard se set hota hai)
-    if (user.user_metadata?.role === 'admin') return true;
-    if (user.app_metadata?.role === 'admin') return true;
-
-    return false;
+    if (error || !data) return false;
+    return true; // admin ya main_admin dono allowed hain
   } catch(e) {
     return false;
   }
+}
+
+// Admin ka role nikalo (main_admin ya admin)
+async function getAdminRole(user) {
+  if (!user) return null;
+  try {
+    const { data } = await sb
+      .from('admin_users')
+      .select('role, name')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+    return data || null;
+  } catch(e) { return null; }
 }
 
 async function doLogin() {
@@ -785,24 +855,28 @@ async function doLogin() {
 
   setLoginLoad(true);
   try {
-    // Step 1: Supabase se login karo
+    // Step 1: Supabase Auth se login
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
 
-    // Step 2: ✅ Dynamically check karo — admin hai ya nahi
+    // Step 2: ✅ admin_users table mein check karo
     const adminOk = await isAdminUser(data.user);
     if (!adminOk) {
-      // Admin nahi hai — logout karo aur error show karo
       await sb.auth.signOut();
-      showLoginErr('Access denied. You are not authorized as admin. Contact your administrator.');
+      showLoginErr('Access denied. You are not authorized to access admin dashboard.');
       return;
     }
 
-    showApp(data.user);
+    // Step 3: Role info lo aur show karo
+    const roleInfo = await getAdminRole(data.user);
+    showApp(data.user, roleInfo);
+
   } catch(e) {
-    showLoginErr(e.message === 'Invalid login credentials'
-      ? 'Wrong email or password. Please try again.'
-      : e.message);
+    showLoginErr(
+      e.message === 'Invalid login credentials'
+        ? 'Wrong email or password. Please try again.'
+        : e.message
+    );
   } finally { setLoginLoad(false); }
 }
 
@@ -813,15 +887,34 @@ function setLoginLoad(on) {
 }
 function showLoginErr(msg) {
   const e = document.getElementById('loginErr');
-  e.textContent = msg; e.style.display = 'block';
+  e.textContent = msg;
+  e.style.display = 'block';
 }
-function showApp(user) {
+function showApp(user, roleInfo) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  const em = user.email || '';
+
+  const em   = user.email || '';
+  const name = roleInfo?.name || em.split('@')[0] || 'Admin';
+  const role = roleInfo?.role || 'admin';
+
   document.getElementById('adminEmailSidebar').textContent = em;
-  document.getElementById('topName').textContent    = em.split('@')[0] || 'Admin';
-  document.getElementById('topAvatar').textContent  = (em[0] || 'A').toUpperCase();
+  document.getElementById('topName').textContent    = name;
+  document.getElementById('topAvatar').textContent  = name[0].toUpperCase();
+
+  // Role badge sidebar mein
+  const roleBadge = document.getElementById('adminRoleBadge');
+  if (roleBadge) {
+    roleBadge.textContent  = role === 'main_admin' ? '⭐ Main Admin' : '👤 Admin';
+    roleBadge.style.color  = role === 'main_admin' ? '#f59e0b' : 'rgba(255,255,255,0.5)';
+  }
+
+  // Main admin ko extra controls dikhao
+  const mainAdminSection = document.getElementById('mainAdminOnly');
+  if (mainAdminSection) {
+    mainAdminSection.style.display = role === 'main_admin' ? 'block' : 'none';
+  }
+
   initAll();
 }
 async function doLogout() {
@@ -838,8 +931,10 @@ async function doLogout() {
   if (session?.user) {
     const adminOk = await isAdminUser(session.user);
     if (adminOk) {
-      showApp(session.user);
+      const roleInfo = await getAdminRole(session.user);
+      showApp(session.user, roleInfo);
     } else {
+      // Admin nahi hai — session clear karo
       await sb.auth.signOut();
     }
   }
@@ -1377,24 +1472,176 @@ async function saveMedia(){if(!mediaImgFile){showToast('❌ Select image!','erro
 async function delMedia(type,id,imgUrl){const table=type==='gallery'?'gallery_images':'instagram_images';try{const{error}=await sb.from(table).delete().eq('id',id);if(error)throw error;if(imgUrl&&imgUrl.includes(BUCKET)){const p=imgUrl.split(BUCKET+'/')[1];if(p)await sb.storage.from(BUCKET).remove([p]);}showToast('✅ Deleted!','success');type==='gallery'?await loadGallery():await loadInsta();}catch(e){showToast('❌ '+e.message,'error');}}
 
 // ══════════════════════════════════════════
+// ✅ MANAGE ADMINS (main_admin only)
+// ══════════════════════════════════════════
+let currentUserRole = null; // Store current user role
+
+async function loadAdminsList() {
+  const tb = document.getElementById('adminsTableBody');
+  if (!tb) return;
+  tb.innerHTML = '<tr class="empty-row"><td colspan="6"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>';
+  try {
+    const { data, error } = await sb
+      .from('admin_users')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      tb.innerHTML = '<tr class="empty-row"><td colspan="6"><i class="fa-solid fa-inbox"></i><br>No admins found</td></tr>';
+      return;
+    }
+
+    tb.innerHTML = data.map(admin => {
+      const date    = new Date(admin.created_at).toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' });
+      const isMain  = admin.role === 'main_admin';
+      const roleTag = isMain
+        ? `<span style="background:#fef9c3;color:#92400e;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;">⭐ Main Admin</span>`
+        : `<span style="background:#dbeafe;color:#1d4ed8;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;">👤 Admin</span>`;
+      const statusTag = admin.is_active
+        ? `<span class="status-pill active">Active</span>`
+        : `<span class="status-pill inactive">Disabled</span>`;
+
+      const actions = isMain
+        ? `<span style="font-size:11px;color:#9ca3af;">Cannot modify</span>` // main admin ko modify nahi kar sakte
+        : `<div class="act-btns">
+             ${admin.is_active
+               ? `<button class="btn-icon btn-icon-del" onclick="toggleAdminStatus('${admin.id}', false)" title="Disable"><i class="fa-solid fa-ban"></i></button>`
+               : `<button class="btn-icon btn-icon-edit" onclick="toggleAdminStatus('${admin.id}', true)" title="Enable"><i class="fa-solid fa-check"></i></button>`
+             }
+             <button class="btn-icon btn-icon-del" onclick="removeAdmin('${admin.id}', '${admin.email}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+           </div>`;
+
+      return `<tr>
+        <td><strong style="font-size:12px;">${admin.name}</strong></td>
+        <td style="font-size:12px;color:#6b7280;">${admin.email}</td>
+        <td>${roleTag}</td>
+        <td>${statusTag}</td>
+        <td style="font-size:11px;color:#9ca3af;">${date}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tb.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:#ef4444;">Error: ${e.message}</td></tr>`;
+    showToast('❌ Failed to load admins: ' + e.message, 'error');
+  }
+}
+
+async function addNewAdmin() {
+  const name   = document.getElementById('newAdminName').value.trim();
+  const email  = document.getElementById('newAdminEmail').value.trim().toLowerCase();
+  const userId = document.getElementById('newAdminUserId').value.trim();
+
+  if (!name || !email || !userId) {
+    showToast('❌ Fill all fields!', 'error'); return;
+  }
+  // UUID format basic check
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(userId)) {
+    showToast('❌ Invalid UUID format. Check the User ID.', 'error'); return;
+  }
+
+  const btn = document.getElementById('addAdminBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+
+  try {
+    // Get current user for added_by field
+    const { data: { user } } = await sb.auth.getUser();
+
+    const { error } = await sb.from('admin_users').insert([{
+      user_id:   userId,
+      email:     email,
+      name:      name,
+      role:      'admin',        // ← always 'admin', never 'main_admin'
+      is_active: true,
+      added_by:  user?.id || null,
+    }]);
+
+    if (error) {
+      if (error.code === '23505') {
+        showToast('❌ This email/user is already an admin!', 'error');
+      } else {
+        throw error;
+      }
+      return;
+    }
+
+    showToast(`✅ "${name}" added as admin!`, 'success');
+    // Clear form
+    ['newAdminName','newAdminEmail','newAdminUserId'].forEach(id => document.getElementById(id).value = '');
+    // Refresh list
+    await loadAdminsList();
+
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 'error');
+    console.error('addNewAdmin error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Add Admin';
+  }
+}
+
+async function toggleAdminStatus(adminId, activate) {
+  try {
+    const { error } = await sb
+      .from('admin_users')
+      .update({ is_active: activate })
+      .eq('id', adminId)
+      .neq('role', 'main_admin'); // main_admin ko modify nahi kar sakte
+    if (error) throw error;
+    showToast(`✅ Admin ${activate ? 'activated' : 'disabled'}!`, 'success');
+    await loadAdminsList();
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+async function removeAdmin(adminId, email) {
+  if (!confirm(`Remove "${email}" as admin? They will lose dashboard access.`)) return;
+  try {
+    const { error } = await sb
+      .from('admin_users')
+      .delete()
+      .eq('id', adminId)
+      .neq('role', 'main_admin'); // main_admin ko delete nahi kar sakte
+    if (error) throw error;
+    showToast(`✅ Admin removed!`, 'success');
+    await loadAdminsList();
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
-function showPage(id,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('active');
-  if(el) el.classList.add('active');
-  const t={dashboard:'Dashboard',orders:'All Orders',products:'All Products',add:'Add Product','cat-section':'Category Images','hero-section':'Hero & Story & Quality','gallery-section':'Gallery','insta-section':'Instagram Feed',settings:'Settings'};
-  document.getElementById('pageTitle').textContent=t[id]||'';
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {
+    dashboard: 'Dashboard', orders: 'All Orders',
+    products: 'All Products', add: 'Add Product',
+    'cat-section': 'Category Images',
+    'hero-section': 'Hero & Story & Quality',
+    'gallery-section': 'Gallery',
+    'insta-section': 'Instagram Feed',
+    settings: 'Settings',
+    'manage-admins': 'Manage Admins',
+  };
+  document.getElementById('pageTitle').textContent = titles[id] || '';
   closeSidebar();
-  if(id==='orders')       loadOrders();
-  if(id==='cat-section')  renderCatCards();
-  if(id==='hero-section') renderHeroCards();
-  if(id==='gallery-section') loadGallery();
-  if(id==='insta-section')   loadInsta();
+  if (id === 'orders')          loadOrders();
+  if (id === 'cat-section')     renderCatCards();
+  if (id === 'hero-section')    renderHeroCards();
+  if (id === 'gallery-section') loadGallery();
+  if (id === 'insta-section')   loadInsta();
+  if (id === 'manage-admins')   loadAdminsList();
 }
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sbOverlay').classList.add('open');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('open');}
+function openSidebar()  { document.getElementById('sidebar').classList.add('open');    document.getElementById('sbOverlay').classList.add('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
 
 // ══════════════════════════════════════════
 // TOAST + TEST
