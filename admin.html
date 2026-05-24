@@ -798,9 +798,8 @@ tr:last-child td{border-bottom:none;}
 // CONFIG — APNI KEYS YAHAN DALEN
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://hmrypwzkenjalttadigx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtcnlwd3prZW5qYWx0dGFkaWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDEzOTEsImV4cCI6MjA5NDMxNzM5MX0.WWVNLiQXc-4Vii596CHPW7K-Z6PIJgcfd4vYGqrK3HA';// ← Supabase → Settings → API → anon public key (eyJ se shuru hogi)
-const BUCKET        = 'product-images';
-// ✅ Admin emails hardcoded nahi — dynamically Supabase admin_users table se check hoga
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtcnlwd3prZW5qYWx0dGFkaWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDEzOTEsImV4cCI6MjA5NDMxNzM5MX0.WWVNLiQXc-4Vii596CHPW7K-Z6PIJgcfd4vYGqrK3HA'; // ← eyJhbGci... wali key yahan
+const BUCKET            = 'product-images';
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -810,16 +809,16 @@ let galleryItems = [], instaItems = [];
 let addImgFile = null, editImgFile = null, secImgFile = null, mediaImgFile = null;
 
 // ══════════════════════════════════════════
-// ══════════════════════════════════════════
 // ✅ DYNAMIC ADMIN CHECK — Supabase admin_users table se
-// main_admin + admin dono ko access milega
-// Normal users ko bilkul access nahi
+// RLS Fix: Login hone ke BAAD check karo — session already set ho chuki hogi
 // ══════════════════════════════════════════
 
-// Check karo: kya yeh user admin hai?
+// ✅ RLS FIX: Login ke baad user ka session set ho jata hai
+// Tab admin_users policy "auth.uid() IS NOT NULL" pass ho jaati hai
 async function isAdminUser(user) {
   if (!user) return false;
   try {
+    // ✅ user_id se check karo — session already set hai to RLS pass hogi
     const { data, error } = await sb
       .from('admin_users')
       .select('id, role, is_active')
@@ -827,14 +826,21 @@ async function isAdminUser(user) {
       .eq('is_active', true)
       .single();
 
-    if (error || !data) return false;
-    return true; // admin ya main_admin dono allowed hain
+    if (error) {
+      // PGRST116 = no rows found = admin nahi hai
+      if (error.code === 'PGRST116') return false;
+      // Koi aur error = table missing etc
+      console.error('admin_users check error:', error.message);
+      return false;
+    }
+    return !!data;
   } catch(e) {
+    console.error('isAdminUser exception:', e.message);
     return false;
   }
 }
 
-// Admin ka role nikalo (main_admin ya admin)
+// Admin ka role nikalo
 async function getAdminRole(user) {
   if (!user) return null;
   try {
@@ -855,33 +861,40 @@ async function doLogin() {
 
   setLoginLoad(true);
   try {
-    // Step 1: Supabase Auth se login
+    // ✅ STEP 1: Pehle Supabase Auth se login karo
+    // Session set hogi — issi liye RLS baad mein kaam karegi
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
 
-    // Step 2: ✅ admin_users table mein check karo
+    // ✅ STEP 2: Ab admin_users check karo (session set ho chuki hai)
+    // RLS policy "auth.uid() IS NOT NULL" ab pass hogi
     const adminOk = await isAdminUser(data.user);
+
     if (!adminOk) {
+      // Admin nahi — logout karo
       await sb.auth.signOut();
-      showLoginErr('Access denied. You are not authorized to access admin dashboard.');
+      showLoginErr('Access denied. You are not authorized as admin.');
       return;
     }
 
-    // Step 3: Role info lo aur show karo
+    // ✅ STEP 3: Role lo aur dashboard show karo
     const roleInfo = await getAdminRole(data.user);
     showApp(data.user, roleInfo);
 
   } catch(e) {
-    showLoginErr(
-      e.message === 'Invalid login credentials'
-        ? 'Wrong email or password. Please try again.'
-        : e.message
-    );
+    const msg = e.message || '';
+    if (msg.includes('Invalid login credentials')) {
+      showLoginErr('Wrong email or password. Please try again.');
+    } else if (msg.includes('Email not confirmed')) {
+      showLoginErr('Email not confirmed. Supabase → Auth → Users → Confirm karo.');
+    } else {
+      showLoginErr('Error: ' + msg);
+    }
   } finally { setLoginLoad(false); }
 }
 
 function setLoginLoad(on) {
-  document.getElementById('loginBtn').style.display     = on ? 'none' : 'block';
+  document.getElementById('loginBtn').style.display     = on ? 'none'  : 'block';
   document.getElementById('loginLoading').style.display = on ? 'block' : 'none';
   document.getElementById('loginErr').style.display     = 'none';
 }
@@ -902,39 +915,36 @@ function showApp(user, roleInfo) {
   document.getElementById('topName').textContent    = name;
   document.getElementById('topAvatar').textContent  = name[0].toUpperCase();
 
-  // Role badge sidebar mein
   const roleBadge = document.getElementById('adminRoleBadge');
   if (roleBadge) {
-    roleBadge.textContent  = role === 'main_admin' ? '⭐ Main Admin' : '👤 Admin';
-    roleBadge.style.color  = role === 'main_admin' ? '#f59e0b' : 'rgba(255,255,255,0.5)';
+    roleBadge.textContent = role === 'main_admin' ? '⭐ Main Admin' : '👤 Admin';
+    roleBadge.style.color = role === 'main_admin' ? '#f59e0b' : 'rgba(255,255,255,0.5)';
   }
-
-  // Main admin ko extra controls dikhao
-  const mainAdminSection = document.getElementById('mainAdminOnly');
-  if (mainAdminSection) {
-    mainAdminSection.style.display = role === 'main_admin' ? 'block' : 'none';
+  const mainAdminNav = document.getElementById('mainAdminOnly');
+  if (mainAdminNav) {
+    mainAdminNav.style.display = role === 'main_admin' ? 'flex' : 'none';
   }
 
   initAll();
 }
 async function doLogout() {
   await sb.auth.signOut();
-  document.getElementById('app').style.display    = 'none';
+  document.getElementById('app').style.display         = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginPass').value = '';
-  document.getElementById('loginErr').style.display = 'none';
+  document.getElementById('loginErr').style.display    = 'none';
 }
 
-// ✅ Auto-restore session — dynamically admin check karo
+// ✅ Auto-restore existing session
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
+    // Session hai — admin check karo
     const adminOk = await isAdminUser(session.user);
     if (adminOk) {
       const roleInfo = await getAdminRole(session.user);
       showApp(session.user, roleInfo);
     } else {
-      // Admin nahi hai — session clear karo
       await sb.auth.signOut();
     }
   }
