@@ -813,27 +813,24 @@ let addImgFile = null, editImgFile = null, secImgFile = null, mediaImgFile = nul
 // RLS Fix: Login hone ke BAAD check karo — session already set ho chuki hogi
 // ══════════════════════════════════════════
 
-// ✅ RLS FIX: Login ke baad user ka session set ho jata hai
-// Tab admin_users policy "auth.uid() IS NOT NULL" pass ho jaati hai
+// ✅ FIX: Simple query — no subquery, no recursion
+// Policy "admin_select_own" allows: auth.uid() = user_id
+// Direct match — koi recursion nahi
 async function isAdminUser(user) {
   if (!user) return false;
   try {
-    // ✅ user_id se check karo — session already set hai to RLS pass hogi
     const { data, error } = await sb
       .from('admin_users')
       .select('id, role, is_active')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id)   // ← direct match with logged-in user
       .eq('is_active', true)
-      .single();
+      .maybeSingle();           // ← .single() ki jagah — no error if not found
 
     if (error) {
-      // PGRST116 = no rows found = admin nahi hai
-      if (error.code === 'PGRST116') return false;
-      // Koi aur error = table missing etc
-      console.error('admin_users check error:', error.message);
+      console.error('admin_users error:', error.message);
       return false;
     }
-    return !!data;
+    return !!data; // data mila = admin hai
   } catch(e) {
     console.error('isAdminUser exception:', e.message);
     return false;
@@ -849,7 +846,7 @@ async function getAdminRole(user) {
       .select('role, name')
       .eq('user_id', user.id)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
     return data || null;
   } catch(e) { return null; }
 }
