@@ -136,7 +136,17 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
 .btn-whatsapp-chat:hover{background:#1ebe5d;}
 .confirm-updates-box{display:flex;align-items:center;gap:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;}
 .confirm-updates-box i{font-size:20px;color:#16a34a;flex-shrink:0;}
-/* ── WHATSAPP FLOAT BUTTON ── */
+/* ── WISHLIST PAGE (full screen overlay) ── */
+#wishlistPage{
+  position:fixed;inset:0;background:#f8f7f4;z-index:20001;
+  display:none;overflow-y:auto;
+  animation:slideUp 0.4s ease;
+}
+#wishlistPage.open{display:block;}
+.wishlist-page-header{background:#1a1a2e;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+.wishlist-page-header .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;letter-spacing:2px;}
+.wishlist-page-header .logo span{color:#e94560;}
+.wishlist-grid{max-width:900px;margin:0 auto;padding:32px 20px 60px;}
 #waFloat{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;align-items:center;gap:10px;background:#25D366;color:#fff;border:none;border-radius:50px;padding:12px 20px 12px 14px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(37,211,102,0.4);transition:all 0.3s;font-family:'Montserrat',sans-serif;text-decoration:none;}
 #waFloat:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(37,211,102,0.5);}
 #waFloat i{font-size:22px;}
@@ -330,6 +340,10 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
           <div class="user-menu-item" onclick="signOut()"><i class="fa-solid fa-right-from-bracket" style="color:#9ca3af;"></i>Sign Out</div>
         </div>
       </div>
+      <button onclick="openWishlistPage()" class="relative text-white hover:text-accent transition" title="Wishlist">
+        <i class="fa-regular fa-heart text-xl"></i>
+        <span id="wishlistBadge" class="absolute -top-2 -right-2 bg-accent text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+      </button>
       <button onclick="openCart()" class="relative text-white hover:text-accent transition">
         <i class="fa-solid fa-bag-shopping text-xl"></i>
         <span id="cartBadge" class="absolute -top-2 -right-2 bg-accent text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
@@ -609,7 +623,22 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
             <button onclick="changeQty(1)" class="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center font-bold hover:border-accent">+</button>
           </div>
         </div>
-        <div class="flex gap-3"><button onclick="addToCartFromModal()" class="btn-solid flex-1 py-3"><i class="fa-solid fa-bag-shopping mr-2"></i>Add to Cart</button><button onclick="buyNow()" class="btn-outline flex-1 py-3">Buy Now</button></div>
+        <!-- ✅ FEATURE 1: Stock=0 hone par buttons update ho jaate hain (openProductModal mein set hote hain) -->
+        <div class="flex gap-3" id="modalActionBtns">
+          <button onclick="addToCartFromModal()" class="btn-solid flex-1 py-3" id="modalAddToCart"><i class="fa-solid fa-bag-shopping mr-2"></i>Add to Cart</button>
+          <!-- Buy Now: disabled state jab stock=0, active jab stock>0 -->
+          <button onclick="buyNow()" class="btn-outline flex-1 py-3" id="modalBuyNow">Buy Now</button>
+        </div>
+        <!-- Wishlist button: sirf stock=0 par dikhta hai, stock>0 par hidden -->
+        <div id="modalWishlistWrap" style="display:none; margin-top:10px;">
+          <button onclick="addToWishlistFromModal()" class="wishlist-btn w-full py-3" id="modalWishlistBtn" style="width:100%;justify-content:center;">
+            <i class="fa-regular fa-heart mr-2"></i>Add to Wishlist — Notify me when back in stock
+          </button>
+        </div>
+        <!-- Out of stock notice -->
+        <div id="modalOutOfStockMsg" style="display:none; margin-top:8px; font-size:12px; color:#e94560; text-align:center; font-weight:600;">
+          <i class="fa-solid fa-circle-exclamation mr-1"></i>This product is currently out of stock.
+        </div>
       </div>
     </div>
     <button onclick="closeProductModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
@@ -635,6 +664,39 @@ body{font-family:'Montserrat',sans-serif;background:#f8f7f4;color:#1a1a2e;overfl
     </div>
     <button onclick="submitOrder()" id="submitOrderBtn" class="btn-solid w-full py-4 text-base" style="border-radius:12px;"><i class="fa-solid fa-check mr-2"></i>Place Order</button>
     <button onclick="closeOrderModal()" class="btn-outline w-full py-3 mt-2" style="border-radius:12px;">Cancel</button>
+  </div>
+</div>
+
+<!-- ✅ WISHLIST PAGE (full screen) -->
+<div id="wishlistPage">
+  <!-- Header -->
+  <div class="wishlist-page-header">
+    <div class="logo">Sole<span>Stride</span></div>
+    <button onclick="closeWishlistPage()" style="color:rgba(255,255,255,0.6);font-size:13px;background:none;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;">
+      <i class="fa-solid fa-xmark" style="margin-right:5px;"></i>Close
+    </button>
+  </div>
+  <!-- Body -->
+  <div class="wishlist-grid">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+      <i class="fa-solid fa-heart" style="font-size:28px;color:#e94560;"></i>
+      <div>
+        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#1a1a2e;">My Wishlist</h1>
+        <p style="font-size:13px;color:#9ca3af;">Products you love — we'll notify you when they're back in stock.</p>
+      </div>
+    </div>
+    <div id="wishlistPageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Items rendered by JS -->
+    </div>
+    <div id="wishlistEmpty" style="display:none;text-align:center;padding:60px 20px;">
+      <i class="fa-regular fa-heart" style="font-size:56px;color:#d1d5db;display:block;margin-bottom:16px;"></i>
+      <p style="font-size:18px;font-weight:700;color:#9ca3af;margin-bottom:8px;">Your wishlist is empty</p>
+      <p style="font-size:13px;color:#9ca3af;margin-bottom:20px;">Browse our products and add items you love!</p>
+      <button onclick="closeWishlistPage();document.getElementById('products').scrollIntoView({behavior:'smooth'});"
+              class="btn-solid px-8 py-3">
+        <i class="fa-solid fa-shoe-prints mr-2"></i>Browse Products
+      </button>
+    </div>
   </div>
 </div>
 
@@ -816,9 +878,28 @@ async function signOut() {
 async function forgotPw() {
   const email = document.getElementById('authEmail').value.trim();
   if (!email) { showAuthMsg('loginErr','Enter your email first.'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email);
-  if (error) showAuthMsg('loginErr', error.message);
-  else showAuthMsg('loginOk','✅ Password reset email sent! Check your inbox.');
+
+  // Show loading state
+  showAuthMsg('loginOk', '⏳ Sending reset email...');
+
+  // ✅ FEATURE 4: Fix email sending — redirectTo parameter REQUIRED by Supabase
+  // Supabase → Authentication → Email Templates → Password Reset mein
+  // redirect URL whitelist mein add karni hai: http://localhost / your-domain.com
+  const redirectTo = window.location.origin + window.location.pathname;
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo, // ← Yeh URL pe user land karega — Supabase panel mein allow karein
+  });
+
+  if (error) {
+    showAuthMsg('loginErr', '❌ ' + error.message);
+  } else {
+    // ✅ Success message: email sent (check inbox + spam)
+    showAuthMsg('loginOk',
+      '✅ Reset email sent! Check your inbox (and spam/junk folder). ' +
+      'Click the link in the email to reset your password.'
+    );
+  }
 }
 function setUserUI(user) {
   currentUser = user;
@@ -830,6 +911,8 @@ function setUserUI(user) {
     document.getElementById('headerAvatar').textContent = name[0].toUpperCase();
     document.getElementById('menuEmail').textContent    = user.email;
   }
+  // ✅ Badge update on login/logout
+  updateWishlistBadge();
 }
 function toggleUserMenu() { document.getElementById('userMenu').classList.toggle('open'); }
 function closeUserMenu()  { document.getElementById('userMenu').classList.remove('open'); }
@@ -1126,8 +1209,63 @@ function openProductModal(id) {
   document.getElementById('modalMainImg').src          = img;
   document.getElementById('modalThumbs').innerHTML     = [img,img,img].map((s,i)=>`<div class="thumb${i===0?' active':''}" onclick="switchThumb(this,'${s}')"><img src="${s}"/></div>`).join('');
   document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+
+  // ✅ FEATURE 1: Stock check — agar stock 0 hai toh Buy Now disable karo, Wishlist show karo
+  const inStock = currentProduct.stock === null || currentProduct.stock === undefined || currentProduct.stock > 0;
+  const addToCartBtn    = document.getElementById('modalAddToCart');
+  const buyNowBtn       = document.getElementById('modalBuyNow');
+  const wishlistWrap    = document.getElementById('modalWishlistWrap');
+  const outOfStockMsg   = document.getElementById('modalOutOfStockMsg');
+
+  if (inStock) {
+    // Stock hai — normal state
+    addToCartBtn.disabled = false;
+    addToCartBtn.style.opacity = '';
+    addToCartBtn.style.cursor  = '';
+    buyNowBtn.disabled    = false;
+    buyNowBtn.style.opacity    = '';
+    buyNowBtn.style.cursor     = '';
+    buyNowBtn.title            = '';
+    wishlistWrap.style.display  = 'none';
+    outOfStockMsg.style.display = 'none';
+  } else {
+    // ✅ Stock = 0 → Add to Cart bhi disable, Buy Now disabled (greyed out, NOT hidden), Wishlist ACTIVE
+    addToCartBtn.disabled = true;
+    addToCartBtn.style.opacity = '0.4';
+    addToCartBtn.style.cursor  = 'not-allowed';
+    buyNowBtn.disabled    = true; // ← greyed out, NOT hidden
+    buyNowBtn.style.opacity    = '0.4';
+    buyNowBtn.style.cursor     = 'not-allowed';
+    buyNowBtn.title            = 'Out of stock — cannot buy right now';
+    wishlistWrap.style.display  = 'block'; // ← Wishlist ACTIVE
+    outOfStockMsg.style.display = 'block';
+
+    // Wishlist button state update karo
+    updateModalWishlistBtn(currentProduct.id);
+  }
+
   document.getElementById('productModal').classList.add('open');
   document.body.style.overflow='hidden';
+}
+
+// ✅ Modal wishlist button ka text/style update karo (wishlisted ya not)
+function updateModalWishlistBtn(productId) {
+  const btn = document.getElementById('modalWishlistBtn');
+  if (!btn) return;
+  if (isInWishlist(productId)) {
+    btn.classList.add('wishlisted');
+    btn.innerHTML = `<i class="fa-solid fa-heart mr-2"></i>Wishlisted ✓ — We'll notify you!`;
+  } else {
+    btn.classList.remove('wishlisted');
+    btn.innerHTML = `<i class="fa-regular fa-heart mr-2"></i>Add to Wishlist — Notify me when back in stock`;
+  }
+}
+
+// ✅ Modal se wishlist add/remove
+function addToWishlistFromModal() {
+  if (!currentProduct) return;
+  addToWishlist(currentProduct.id);
+  updateModalWishlistBtn(currentProduct.id);
 }
 function closeProductModal(e) { if(!e||e.target===document.getElementById('productModal')){document.getElementById('productModal').classList.remove('open');document.body.style.overflow='';} }
 function switchThumb(el,src){document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('modalMainImg').src=src;}
@@ -1198,6 +1336,7 @@ function addToWishlist(productId) {
 
   // Button update karo
   updateWishlistButtons(productId);
+  updateWishlistBadge(); // ✅ Navbar badge bhi update karo
 }
 
 function isInWishlist(productId) {
@@ -1218,7 +1357,188 @@ function updateWishlistButtons(productId) {
   });
 }
 
-function quickAdd(id) {
+// ════════════════════════════════════════
+// ✅ FEATURE 5: WISHLIST PAGE — Open/Close/Render
+// ════════════════════════════════════════
+
+// Wishlist badge update karo (heart icon ke upar count)
+function updateWishlistBadge() {
+  const wishlist = getWishlist();
+  const userId   = currentUser?.id || 'guest';
+  // Sirf is user ke items count karo
+  const myItems  = wishlist.filter(k => k.startsWith(`${userId}_`));
+  const badge    = document.getElementById('wishlistBadge');
+  if (badge) {
+    badge.textContent = myItems.length;
+    badge.classList.toggle('hidden', myItems.length === 0);
+  }
+}
+
+// Wishlist page kholna
+function openWishlistPage() {
+  renderWishlistPage();
+  document.getElementById('wishlistPage').classList.add('open');
+  document.getElementById('wishlistPage').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+// Wishlist page band karna
+function closeWishlistPage() {
+  document.getElementById('wishlistPage').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Wishlist page render karna — logged-in user ke items Supabase se + guest items localStorage se
+async function renderWishlistPage() {
+  const grid  = document.getElementById('wishlistPageGrid');
+  const empty = document.getElementById('wishlistEmpty');
+  grid.innerHTML = `<div class="col-span-3" style="text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:#e94560;"></i></div>`;
+
+  let wishlistedProductIds = [];
+
+  if (currentUser) {
+    // Logged-in user: Supabase wishlist se lo
+    try {
+      const { data } = await sb.from('wishlist')
+        .select('product_id')
+        .eq('user_id', currentUser.id);
+      wishlistedProductIds = (data || []).map(w => w.product_id);
+    } catch(e) {
+      // Fallback: localStorage se
+      const local = getWishlist();
+      wishlistedProductIds = local
+        .filter(k => k.startsWith(`${currentUser.id}_`))
+        .map(k => parseInt(k.split('_')[1]));
+    }
+  } else {
+    // Guest: localStorage se
+    const local = getWishlist();
+    wishlistedProductIds = local
+      .filter(k => k.startsWith('guest_'))
+      .map(k => parseInt(k.split('_')[1]));
+  }
+
+  if (!wishlistedProductIds.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  // Products match karo
+  const wishlistProducts = allProducts.filter(p => wishlistedProductIds.includes(p.id));
+
+  if (!wishlistProducts.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  grid.innerHTML = wishlistProducts.map(p => {
+    const img    = p.image_url || `https://placehold.co/400x260/1a1a2e/fff?text=${encodeURIComponent(p.name)}`;
+    const inStock = p.stock === null || p.stock === undefined || p.stock > 0;
+    const stockBadge = !inStock
+      ? `<span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:8px;">Out of Stock</span>`
+      : `<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:8px;">In Stock ✓</span>`;
+
+    return `<div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+      <div style="overflow:hidden;height:200px;cursor:pointer;" onclick="closeWishlistPage();openProductModal(${p.id})">
+        <img src="${img}" alt="${p.name}" style="width:100%;height:200px;object-fit:cover;transition:transform 0.4s;"
+             onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'"
+             onerror="this.src='https://placehold.co/400x200/1a1a2e/fff?text=Shoe'"/>
+      </div>
+      <div style="padding:16px;">
+        <span style="font-size:10px;font-weight:700;color:#e94560;text-transform:uppercase;letter-spacing:0.1em;">${p.category}</span>
+        <h3 style="font-weight:700;font-size:15px;margin:4px 0 6px;line-height:1.3;">${p.name}</h3>
+        ${stockBadge}
+        <p style="font-weight:700;font-size:16px;color:#e94560;margin-bottom:12px;">PKR ${Number(p.price).toLocaleString()}</p>
+        <div style="display:flex;gap:8px;">
+          ${inStock
+            ? `<button onclick="closeWishlistPage();openProductModal(${p.id})" class="btn-solid flex-1 py-2" style="font-size:12px;">
+                 <i class="fa-solid fa-bag-shopping mr-1"></i>Buy Now
+               </button>`
+            : `<span style="font-size:11px;color:#9ca3af;padding:8px 0;flex:1;"><i class="fa-solid fa-bell" style="color:#e94560;margin-right:4px;"></i>You'll be notified when back in stock!</span>`
+          }
+          <button onclick="removeFromWishlistPage(${p.id})"
+                  style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:12px;"
+                  title="Remove from wishlist">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Wishlist page se item remove karna
+async function removeFromWishlistPage(productId) {
+  // localStorage se remove
+  const wishlist = getWishlist();
+  const userId   = currentUser?.id || 'guest';
+  const key      = `${userId}_${productId}`;
+  const updated  = wishlist.filter(k => k !== key);
+  saveWishlist(updated);
+
+  // Supabase se bhi remove (logged in user)
+  if (currentUser) {
+    await sb.from('wishlist').delete()
+      .eq('user_id', currentUser.id)
+      .eq('product_id', productId);
+  }
+
+  updateWishlistBadge();
+  renderWishlistPage(); // Page re-render karo
+  showToast('Removed from wishlist', 'info');
+}
+
+// ════════════════════════════════════════
+// ✅ FEATURE 6: BACK-IN-STOCK EMAIL NOTIFICATION
+// Jab product stock 0 → >0 ho jaaye, Supabase se
+// wishlist users ka email nikalo aur email bhejo
+// NOTE: Actual email Supabase Edge Function se bhejni hogi
+// (client-side se direct email nahi bhej sakte)
+// Yahan hum Supabase ke notification_queue table mein record insert karte hain
+// Admin ya Edge Function wo process karega
+// ════════════════════════════════════════
+
+// Yeh function admin.html mein bhi call hoti hai jab stock update hota hai
+// Stock 0 → >0 detect hone par wishlist users ko notify karo
+async function notifyBackInStock(productId, productName, imageUrl) {
+  try {
+    // Wishlist mein jo users hain unhe dhundho
+    const { data: wishlistUsers, error } = await sb
+      .from('wishlist')
+      .select('user_email, user_id')
+      .eq('product_id', productId);
+
+    if (error || !wishlistUsers || !wishlistUsers.length) return;
+
+    // notification_queue table mein insert karo (admin/edge function process karega)
+    // Ek record per user insert karo
+    const notifications = wishlistUsers
+      .filter(w => w.user_email) // Sirf wo jo email hai
+      .map(w => ({
+        user_email:   w.user_email,
+        user_id:      w.user_id,
+        product_id:   productId,
+        product_name: productName,
+        product_url:  `${window.location.origin}${window.location.pathname}?product=${productId}`,
+        image_url:    imageUrl || null,
+        type:         'back_in_stock',
+        sent:         false,
+        created_at:   new Date().toISOString(),
+      }));
+
+    if (notifications.length) {
+      await sb.from('notification_queue').insert(notifications);
+      console.log(`✅ ${notifications.length} back-in-stock notifications queued for "${productName}"`);
+    }
+  } catch(e) {
+    // Silently fail — notification fail hone se order process affect nahi hona chahiye
+    console.warn('notifyBackInStock error:', e.message);
+  }
+}
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
 
@@ -1293,6 +1613,28 @@ async function submitOrder(){
 
   if(!fn||!ln||!addr||!phone){
     showToast('Please fill all required fields!','error'); return;
+  }
+
+  // ✅ FEATURE 2: Stock validation — har cart item ka ordered qty check karo
+  // Agar kisi ka bhi qty > available stock, order nahi dena
+  const stockErrors = [];
+  for (const item of cart) {
+    // allProducts mein product dhundho by id
+    const prod = allProducts.find(p => p.id === item.id);
+    if (prod && prod.stock !== null && prod.stock !== undefined) {
+      if (item.qty > prod.stock) {
+        stockErrors.push(`"${item.name}": ordered ${item.qty}, only ${prod.stock} in stock`);
+      }
+    }
+  }
+  if (stockErrors.length > 0) {
+    // ❌ Order block karo — error message dikhao
+    showToast(`Out of stock! ${stockErrors[0]}`, 'error');
+    // Detailed message bhi dikhao
+    setTimeout(() => {
+      alert(`❌ Stock Error!\n\nThese items exceed available stock:\n\n${stockErrors.join('\n')}\n\nPlease reduce quantity and try again.`);
+    }, 100);
+    return;
   }
 
   const btn = document.getElementById('submitOrderBtn');
@@ -1418,6 +1760,26 @@ function setupAllRealtime() {
     .on('postgres_changes', {
       event: '*', schema: 'public', table: 'products'
     }, async (payload) => {
+      // ✅ FEATURE 6: Back-in-stock check — UPDATE event pe
+      // Agar kisi product ki stock 0 thi aur ab >0 ho gayi → notify wishlist users
+      if (payload.eventType === 'UPDATE') {
+        const oldStock = payload.old?.stock;
+        const newStock = payload.new?.stock;
+        const productId = payload.new?.id;
+        const productName = payload.new?.name;
+        const imageUrl = payload.new?.image_url;
+
+        // Stock 0 se > 0 ho gaya → back in stock!
+        if (
+          (oldStock === 0 || oldStock === null) &&
+          newStock > 0 &&
+          productId
+        ) {
+          console.log(`🎉 Product "${productName}" is back in stock! Notifying wishlist users...`);
+          await notifyBackInStock(productId, productName, imageUrl);
+        }
+      }
+
       await cacheClear('ss_products');
       try {
         const { data } = await sb.from('products').select('*')
@@ -1425,6 +1787,7 @@ function setupAllRealtime() {
         allProducts = data || [];
         await cacheSet('ss_products', allProducts);
         applyFilter(currentFilter);
+        updateWishlistBadge(); // Badge bhi update karo
         if (payload.eventType === 'INSERT') {
           showToast('New product just added! 🔥', 'success');
         }
@@ -1514,6 +1877,7 @@ function setupAllRealtime() {
 // START
 // ════════════════════════════════════════
 updateBadge();
+updateWishlistBadge(); // ✅ Wishlist badge initialize karo
 startCountdown();
 observeFadeUp();
 initAll();

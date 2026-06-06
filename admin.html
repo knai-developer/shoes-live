@@ -1072,6 +1072,11 @@ async function updateProduct() {
   if (!name||!price||isNaN(price)) { showToast('❌ Fill required fields','error'); return; }
   const btn=document.getElementById('updateBtn'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
   try {
+    // ✅ FEATURE 6: Back-in-stock check — purana stock check karo
+    const oldProduct = allProducts.find(p => p.id === id);
+    const oldStock   = oldProduct?.stock ?? 0;
+    const isRestocked = (oldStock === 0 || oldStock === null) && stock > 0;
+
     let imgUrl = null;
     if (editImgFile) { document.getElementById('editProg').style.display='block'; imgUrl=await uploadImg(editImgFile,'editFill','editTxt'); }
     const row = { name, category:cat, price, stock, description:desc, is_active:active,
@@ -1079,10 +1084,61 @@ async function updateProduct() {
     if (imgUrl) row.image_url = imgUrl;
     const { error } = await sb.from('products').update(row).eq('id', id);
     if (error) throw error;
-    showToast(`✅ "${name}" updated!`,'success');
+
+    // ✅ FEATURE 6: Agar stock wapas aaya toh wishlist users ko notify karo
+    if (isRestocked) {
+      await triggerBackInStockNotification(id, name, imgUrl || oldProduct?.image_url);
+      showToast(`✅ "${name}" updated! 🎉 Back-in-stock notifications queued for wishlist users.`, 'success');
+    } else {
+      showToast(`✅ "${name}" updated!`,'success');
+    }
+
     closeEditModal(); await loadProducts(); renderProdTable(); renderDash();
   } catch(e) { showToast('❌ '+e.message,'error'); }
   finally { btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check"></i> Update Product'; }
+}
+
+// ✅ FEATURE 6: Admin side se wishlist users ko back-in-stock notification queue mein dalna
+// notification_queue table mein insert karo (Supabase Edge Function ya cron ye process karega)
+async function triggerBackInStockNotification(productId, productName, imageUrl) {
+  try {
+    // Wishlist mein is product ke saare users dhundho
+    const { data: wishlistUsers, error } = await sb
+      .from('wishlist')
+      .select('user_email, user_id')
+      .eq('product_id', productId);
+
+    if (error || !wishlistUsers || !wishlistUsers.length) {
+      console.log(`No wishlist users for product ${productId}`);
+      return;
+    }
+
+    // notification_queue mein entries insert karo — Edge Function/cron email bhejega
+    const notifications = wishlistUsers
+      .filter(w => w.user_email)
+      .map(w => ({
+        user_email:   w.user_email,
+        user_id:      w.user_id,
+        product_id:   productId,
+        product_name: productName,
+        product_url:  `${SUPABASE_URL.replace('supabase.co','')}/` || '#', // store URL — update this
+        image_url:    imageUrl || null,
+        type:         'back_in_stock',
+        sent:         false,
+        created_at:   new Date().toISOString(),
+      }));
+
+    if (notifications.length > 0) {
+      const { error: insertErr } = await sb.from('notification_queue').insert(notifications);
+      if (insertErr) {
+        console.warn('notification_queue insert error:', insertErr.message);
+      } else {
+        console.log(`✅ ${notifications.length} back-in-stock notifications queued for "${productName}"`);
+      }
+    }
+  } catch(e) {
+    console.warn('triggerBackInStockNotification error:', e.message);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1250,17 +1306,32 @@ async function updateOrderStatus(id, status) {
         showToast(`✅ Order confirmed! Stock updated.`, 'success');
       }
 
-      // Case B: confirmed → cancelled = stock WAPAS add karo
-      else if (status === 'cancelled' && prevStatus === 'confirmed') {
-        for (const item of items) {
-          const prod = allProducts.find(p => p.name === item.name);
-          if (prod) {
-            const newStock = (prod.stock || 0) + (item.qty || 1);
-            await sb.from('products').update({ stock: newStock }).eq('id', prod.id);
-            prod.stock = newStock;
+      // ✅ FEATURE 3: Case B — ANY status → cancelled = stock WAPAS add karo
+      // Sirf jab pehle "confirmed" tha (tab stock minus hua tha)
+      // Pending → cancelled mein stock minus nahi hua tha, toh restore mat karo
+      else if (status === 'cancelled' && prevStatus !== 'cancelled') {
+        if (prevStatus === 'confirmed') {
+          // ✅ Confirmed tha → stock minus hua tha → ab wapas add karo
+          for (const item of items) {
+            const prod = allProducts.find(p => p.name === item.name);
+            if (prod) {
+              const prevStock = prod.stock || 0;
+              const newStock  = prevStock + (item.qty || 1);
+              await sb.from('products').update({ stock: newStock }).eq('id', prod.id);
+
+              // ✅ FEATURE 6: Stock 0 se > 0 ho gaya? → Back-in-stock notify karo
+              if (prevStock === 0 && newStock > 0) {
+                await triggerBackInStockNotification(prod.id, prod.name, prod.image_url);
+              }
+
+              prod.stock = newStock;
+            }
           }
+          showToast(`✅ Order cancelled. Stock restored to inventory.`, 'info');
+        } else {
+          // Pending ya koi aur status se cancel — stock minus nahi hua tha
+          showToast(`✅ Order cancelled.`, 'info');
         }
-        showToast(`✅ Order cancelled. Stock restored.`, 'info');
       }
 
       else {
