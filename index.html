@@ -719,7 +719,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ════════════════════════════════════════════════════════
 
 const DB_NAME    = 'SoleStrideDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // ✅ FIX: Bumped to force old stale cache to reset
 const STORE_NAME = 'cache';
 let _db = null;
 
@@ -755,6 +755,9 @@ async function cacheSet(key, data) {
   }
 }
 
+// ✅ FIX: Cache TTL — 5 minutes max (prevents stale data on refresh)
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 // Get from IndexedDB
 async function cacheGet(key) {
   try {
@@ -762,14 +765,24 @@ async function cacheGet(key) {
     return new Promise((resolve) => {
       const tx  = db.transaction(STORE_NAME, 'readonly');
       const req = tx.objectStore(STORE_NAME).get(key);
-      req.onsuccess = () => resolve(req.result?.data || null);
+      req.onsuccess = () => {
+        const rec = req.result;
+        if (!rec) { resolve(null); return; }
+        // ✅ FIX: Expire cache after TTL — force fresh fetch from Supabase
+        if (Date.now() - rec.ts > CACHE_TTL_MS) { resolve(null); return; }
+        resolve(rec.data);
+      };
       req.onerror   = () => resolve(null);
     });
   } catch(e) {
     // Fallback to localStorage
     try {
       const raw = localStorage.getItem('fb_'+key);
-      return raw ? JSON.parse(raw).data : null;
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      // Check TTL for localStorage too
+      if (Date.now() - parsed.ts > CACHE_TTL_MS) { localStorage.removeItem('fb_'+key); return null; }
+      return parsed.data;
     } catch(x) { return null; }
   }
 }
@@ -818,7 +831,68 @@ let currentUser = null;
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) setUserUI(session.user);
+
+  // ✅ FIX: Handle password reset link — Supabase redirects back with #access_token in URL
+  // Detect this and show a password update form
+  const hash = window.location.hash;
+  if (hash && hash.includes('type=recovery')) {
+    // User came from password reset email — show update password UI
+    showPasswordResetUI();
+  }
 })();
+
+// ✅ FIX: Show password reset form when user arrives from email link
+function showPasswordResetUI() {
+  // Open auth modal and show password update form
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Hide login/signup tabs, show reset form
+  document.getElementById('loginBody').style.display  = 'none';
+  document.getElementById('signupBody').style.display = 'none';
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('tabSignup').classList.remove('active');
+  // Inject reset form if not already there
+  if (!document.getElementById('resetBody')) {
+    const resetHtml = `
+      <div id="resetBody" style="padding:24px;">
+        <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Set New Password</h3>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">Enter your new password below.</p>
+        <div id="resetErr" class="auth-msg auth-err"></div>
+        <div id="resetOk" class="auth-msg auth-ok"></div>
+        <input id="newPass" type="password" class="auth-inp" placeholder="New password (min 6 chars)" autocomplete="new-password"/>
+        <input id="newPass2" type="password" class="auth-inp" placeholder="Confirm new password" autocomplete="new-password"/>
+        <button class="auth-btn" onclick="doPasswordReset()">Update Password</button>
+      </div>`;
+    const authBox = document.querySelector('.auth-box');
+    authBox.insertAdjacentHTML('beforeend', resetHtml);
+  } else {
+    document.getElementById('resetBody').style.display = 'block';
+  }
+}
+
+async function doPasswordReset() {
+  const p1 = document.getElementById('newPass').value;
+  const p2 = document.getElementById('newPass2').value;
+  const errEl = document.getElementById('resetErr');
+  const okEl  = document.getElementById('resetOk');
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+
+  if (!p1 || p1.length < 6) { errEl.textContent = 'Min 6 characters required.'; errEl.style.display='block'; return; }
+  if (p1 !== p2) { errEl.textContent = 'Passwords do not match.'; errEl.style.display='block'; return; }
+
+  try {
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if (error) throw error;
+    okEl.textContent = '✅ Password updated! You can now sign in.';
+    okEl.style.display = 'block';
+    // Clean URL hash
+    window.history.replaceState(null, '', window.location.pathname);
+    setTimeout(() => { closeAuthModal(); switchTab('login'); }, 2000);
+  } catch(e) {
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
 
 function openAuthModal(tab) {
   switchTab(tab || 'login');
@@ -882,23 +956,34 @@ async function forgotPw() {
   // Show loading state
   showAuthMsg('loginOk', '⏳ Sending reset email...');
 
-  // ✅ FEATURE 4: Fix email sending — redirectTo parameter REQUIRED by Supabase
-  // Supabase → Authentication → Email Templates → Password Reset mein
-  // redirect URL whitelist mein add karni hai: http://localhost / your-domain.com
-  const redirectTo = window.location.origin + window.location.pathname;
+  // ✅ FIX: redirectTo must EXACTLY match a URL in Supabase Auth → URL Configuration → Redirect URLs
+  // Go to: Supabase Dashboard → Authentication → URL Configuration
+  // Add this site URL under "Redirect URLs": https://your-domain.com  (or http://localhost for dev)
+  const redirectTo = window.location.origin + '/index.html';
 
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: redirectTo, // ← Yeh URL pe user land karega — Supabase panel mein allow karein
-  });
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo,
+    });
 
-  if (error) {
-    showAuthMsg('loginErr', '❌ ' + error.message);
-  } else {
-    // ✅ Success message: email sent (check inbox + spam)
-    showAuthMsg('loginOk',
-      '✅ Reset email sent! Check your inbox (and spam/junk folder). ' +
-      'Click the link in the email to reset your password.'
-    );
+    if (error) {
+      // ✅ FIX: Show specific error — common cause is email provider not configured in Supabase
+      let errMsg = '❌ ' + error.message;
+      if (error.message.includes('rate limit') || error.message.includes('429')) {
+        errMsg = '❌ Too many requests. Wait a few minutes and try again.';
+      } else if (error.message.includes('not found') || error.message.includes('invalid')) {
+        errMsg = '❌ Email not found or invalid. Try signing up first.';
+      }
+      showAuthMsg('loginErr', errMsg);
+    } else {
+      // ✅ Success message: email sent (check inbox + spam)
+      showAuthMsg('loginOk',
+        '✅ Reset email sent! Check your inbox and spam/junk folder. ' +
+        'Click the link in the email to set a new password.'
+      );
+    }
+  } catch(e) {
+    showAuthMsg('loginErr', '❌ ' + (e.message || 'Unknown error. Try again.'));
   }
 }
 function setUserUI(user) {
@@ -1038,7 +1123,7 @@ function renderCurrentPage() {
     const inStock = (p.stock === null || p.stock === undefined) ? true : p.stock > 0;
 
     const actionBtn = inStock
-      ? `<button onclick="event.stopPropagation();quickAdd(${p.id})" class="btn-solid py-2 px-4 text-sm">
+      ? `<button onclick="event.stopPropagation();openProductModal(${p.id})" class="btn-solid py-2 px-4 text-sm">
            <i class="fa-solid fa-plus mr-1"></i>Add
          </button>`
       : `<button onclick="event.stopPropagation();addToWishlist(${p.id})" class="wishlist-btn py-2 px-3 text-sm">
