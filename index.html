@@ -1346,10 +1346,22 @@ function updateModalWishlistBtn(productId) {
   }
 }
 
-// ✅ Modal se wishlist add/remove
+// ✅ Modal se wishlist add/remove (sirf out-of-stock products ke liye)
 function addToWishlistFromModal() {
   if (!currentProduct) return;
-  addToWishlist(currentProduct.id);
+  // Directly wishlist mein save karo (modal se call hota hai, stock=0 case)
+  const wishlist = getWishlist();
+  const userId   = currentUser?.id || 'guest';
+  const key      = `${userId}_${currentProduct.id}`;
+  if (wishlist.includes(key)) {
+    const updated = wishlist.filter(k => k !== key);
+    saveWishlist(updated);
+    showToast(`Removed from wishlist`, 'info');
+  } else {
+    wishlist.push(key);
+    saveWishlist(wishlist);
+    showToast(`❤️ Added to wishlist! We'll notify you when back in stock.`, 'success');
+  }
   updateModalWishlistBtn(currentProduct.id);
 }
 function closeProductModal(e) { if(!e||e.target===document.getElementById('productModal')){document.getElementById('productModal').classList.remove('open');document.body.style.overflow='';} }
@@ -1365,11 +1377,40 @@ function addToCartFromModal() {
     return;
   }
 
-  addToCart(currentProduct, modalQty, selectedSize || '—');
+  // ✅ Size mandatory check
+  if (!selectedSize) {
+    showToast(`⚠️ Pehle size choose karein!`, 'error');
+    // Size section ko highlight karo
+    const sizeRow = document.querySelector('.size-btn');
+    if (sizeRow) {
+      sizeRow.closest('div').style.outline = '2px solid #e94560';
+      sizeRow.closest('div').style.borderRadius = '8px';
+      setTimeout(() => { sizeRow.closest('div').style.outline = ''; }, 2000);
+    }
+    return;
+  }
+
+  addToCart(currentProduct, modalQty, selectedSize);
   showToast(`${currentProduct.name} added to cart!`, 'success');
   closeProductModal();
 }
-function buyNow(){if(!currentProduct)return;addToCart(currentProduct,modalQty,selectedSize||'—');closeProductModal();openCart();}
+function buyNow(){
+  if(!currentProduct) return;
+  // ✅ Size mandatory check
+  if (!selectedSize) {
+    showToast(`⚠️ Pehle size choose karein!`, 'error');
+    const sizeRow = document.querySelector('.size-btn');
+    if (sizeRow) {
+      sizeRow.closest('div').style.outline = '2px solid #e94560';
+      sizeRow.closest('div').style.borderRadius = '8px';
+      setTimeout(() => { sizeRow.closest('div').style.outline = ''; }, 2000);
+    }
+    return;
+  }
+  addToCart(currentProduct, modalQty, selectedSize);
+  closeProductModal();
+  openCart();
+}
 // ════════════════════════════════════════
 // ✅ 3. WISHLIST — Stock 0 hone par
 // LocalStorage mein save hota hai per user
@@ -1382,13 +1423,14 @@ function saveWishlist(list) {
 }
 
 function addToWishlist(productId) {
-  // Stock check — agar ab available hai toh cart mein add karo
+  // Stock check — agar ab available hai toh modal kholo size choose karne ke liye
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
 
   if (p.stock > 0) {
-    // Stock aa gayi — cart mein add karo
-    quickAdd(productId);
+    // Stock hai — pehle size choose karo modal mein
+    openProductModal(productId);
+    showToast(`⚠️ Pehle size choose karein phir cart mein add karein!`, 'info');
     return;
   }
 

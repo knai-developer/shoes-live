@@ -969,6 +969,12 @@ function showApp(user, roleInfo) {
     mainAdminNav.style.display = role === 'main_admin' ? 'flex' : 'none';
   }
 
+  // ✅ main_admin ko seedha dashboard pe bhejo — login screen skip
+  if (role === 'main_admin') {
+    const dashNav = document.querySelector('.nav-item[onclick*="dashboard"]');
+    showPage('dashboard', dashNav);
+  }
+
   initAll();
 }
 async function doLogout() {
