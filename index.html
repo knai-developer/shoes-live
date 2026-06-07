@@ -922,6 +922,24 @@ async function signIn() {
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
+
+    // ✅ Check karo — kya yeh main_admin hai?
+    const { data: adminData } = await sb
+      .from('admin_users')
+      .select('role')
+      .eq('user_id', data.user.id)
+      .eq('role', 'main_admin')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (adminData) {
+      // Main admin hai — admin dashboard pe bhejo
+      showAuthMsg('loginOk', '✅ Admin detected! Redirecting...');
+      setTimeout(() => { window.location.href = 'admin.html'; }, 800);
+      return;
+    }
+
+    // Normal user — store pe rakho
     setUserUI(data.user);
     showAuthMsg('loginOk','✅ Signed in!');
     setTimeout(() => { closeAuthModal(); openOrderModal(); }, 700);
