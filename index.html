@@ -1539,6 +1539,9 @@ async function notifyBackInStock(productId, productName, imageUrl) {
     console.warn('notifyBackInStock error:', e.message);
   }
 }
+
+// ✅ Quick add to cart from product grid (stock check included)
+function quickAdd(id) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
 

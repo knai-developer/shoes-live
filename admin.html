@@ -304,6 +304,17 @@ tr:last-child td{border-bottom:none;}
 <!-- TOAST -->
 <div id="toast"></div>
 
+<!-- ✅ CONNECTION WARNING BANNER — file:// se khola ho toh dikhega -->
+<div id="connBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#f59e0b;color:#1a1a2e;padding:10px 20px;font-size:13px;font-weight:700;
+  text-align:center;font-family:'Montserrat',sans-serif;">
+  ⚠️ "Failed to fetch" error: File ko directly browser mein mat kholo.
+  VS Code → <strong>Live Server</strong> use karo ya kisi HTTP server pe host karo.
+  <button onclick="this.parentElement.style.display='none'"
+    style="margin-left:16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;
+    padding:4px 10px;cursor:pointer;font-size:12px;">✕ Close</button>
+</div>
+
 <!-- ══════════════════════════════════════
      LOGIN SCREEN
 ══════════════════════════════════════ -->
@@ -611,6 +622,28 @@ tr:last-child td{border-bottom:none;}
     <!-- ── SETTINGS ── -->
     <div class="page" id="page-settings">
       <div style="max-width:520px;">
+
+        <!-- ✅ Image Fix Guide -->
+        <div class="form-card" style="margin-bottom:14px;border-left:4px solid #f59e0b;">
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:10px;">
+            <i class="fa-solid fa-image" style="color:#f59e0b;margin-right:7px;"></i>Images Not Loading? Fix This First
+          </h3>
+          <div style="font-size:12px;color:#374151;line-height:1.8;">
+            <p style="font-weight:700;margin-bottom:6px;">Supabase Storage → Bucket Public karo:</p>
+            <ol style="padding-left:16px;space-y:4px;">
+              <li>Supabase Dashboard kholo</li>
+              <li>Left sidebar → <strong>Storage</strong></li>
+              <li><strong>product-images</strong> bucket pe click karo</li>
+              <li>Top right → <strong>Bucket Settings</strong></li>
+              <li><strong>Public bucket</strong> toggle ON karo → Save</li>
+            </ol>
+            <p style="margin-top:8px;color:#dc2626;font-weight:600;">
+              ⚠️ Agar file:// se khola hai toh kuch kaam nahi karega.<br>
+              VS Code → Live Server extension → "Go Live" button use karo.
+            </p>
+          </div>
+        </div>
+
         <div class="form-card" style="margin-bottom:14px;">
           <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:12px;"><i class="fa-solid fa-lock" style="color:var(--accent);margin-right:7px;"></i>Change Admin Password</h3>
           <div class="form-row"><label>New Password</label><input type="password" id="sNewPass" placeholder="Min 6 characters"></div>
@@ -618,9 +651,9 @@ tr:last-child td{border-bottom:none;}
           <button class="btn-primary" onclick="changePass()"><i class="fa-solid fa-check"></i> Update Password</button>
         </div>
         <div class="form-card" style="margin-bottom:14px;">
-          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:8px;"><i class="fa-solid fa-database" style="color:var(--accent);margin-right:7px;"></i>Connection</h3>
-          <button class="btn-secondary" onclick="testConn()"><i class="fa-solid fa-satellite-dish"></i> Test Supabase</button>
-          <p id="connStatus" style="font-size:12px;margin-top:9px;"></p>
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:8px;"><i class="fa-solid fa-database" style="color:var(--accent);margin-right:7px;"></i>Connection Diagnostics</h3>
+          <button class="btn-secondary" onclick="testConn()"><i class="fa-solid fa-satellite-dish"></i> Test All Connections</button>
+          <div id="connStatus" style="margin-top:9px;"></div>
         </div>
         <div class="form-card" style="border:2px solid #fee2e2;">
           <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:7px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:7px;"></i>Danger Zone</h3>
@@ -798,11 +831,25 @@ tr:last-child td{border-bottom:none;}
 // CONFIG — APNI KEYS YAHAN DALEN
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://hmrypwzkenjalttadigx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtcnlwd3prZW5qYWx0dGFkaWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDEzOTEsImV4cCI6MjA5NDMxNzM5MX0.WWVNLiQXc-4Vii596CHPW7K-Z6PIJgcfd4vYGqrK3HA'; // ← eyJhbGci... wali key yahan
-const BUCKET            = 'product-images';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtcnlwd3prZW5qYWx0dGFkaWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDEzOTEsImV4cCI6MjA5NDMxNzM5MX0.WWVNLiQXc-4Vii596CHPW7K-Z6PIJgcfd4vYGqrK3HA';
+const BUCKET = 'product-images';
+
+// ✅ FIX: file:// protocol check — Supabase fetch sirf HTTP/HTTPS pe kaam karta hai
+if (window.location.protocol === 'file:') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('connBanner');
+    if (banner) banner.style.display = 'block';
+  });
+}
 
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    // ✅ FIX: persistSession true rakho — page refresh par session lost na ho
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 let allProducts = [], allOrders = [], sections = {};
 let galleryItems = [], instaItems = [];
@@ -978,11 +1025,19 @@ async function uploadImg(file, fillId, txtId) {
   const ext  = file.name.split('.').pop().toLowerCase();
   const path = `products/img_${Date.now()}_${Math.random().toString(36).substr(2,5)}.${ext}`;
   setProg(fillId, txtId, 25, 'Uploading...');
+
   const { error } = await sb.storage.from(BUCKET).upload(path, file,
     { cacheControl:'3600', upsert:false, contentType:file.type });
   if (error) throw error;
+
   setProg(fillId, txtId, 90, 'Getting URL...');
+
+  // ✅ FIX: getPublicUrl — bucket PUBLIC hona chahiye Supabase Storage settings mein
   const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
+
+  // Verify URL is valid
+  if (!data?.publicUrl) throw new Error('Could not get public URL. Check bucket is set to Public in Supabase Storage.');
+
   setProg(fillId, txtId, 100, '✅ Done!');
   return data.publicUrl;
 }
@@ -1098,22 +1153,29 @@ async function updateProduct() {
   finally { btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check"></i> Update Product'; }
 }
 
-// ✅ FEATURE 6: Admin side se wishlist users ko back-in-stock notification queue mein dalna
-// notification_queue table mein insert karo (Supabase Edge Function ya cron ye process karega)
+// ✅ FEATURE 6: Back-in-stock notification queue
+// notification_queue table ZAROOR banao Supabase SQL Editor mein:
+// CREATE TABLE IF NOT EXISTS notification_queue (
+//   id bigint generated always as identity primary key,
+//   user_email text, user_id uuid, product_id bigint,
+//   product_name text, product_url text, image_url text,
+//   type text default 'back_in_stock', sent boolean default false,
+//   created_at timestamptz default now()
+// );
 async function triggerBackInStockNotification(productId, productName, imageUrl) {
   try {
-    // Wishlist mein is product ke saare users dhundho
-    const { data: wishlistUsers, error } = await sb
+    // Step 1: Wishlist check — table exist na kare toh silently skip
+    const { data: wishlistUsers, error: wErr } = await sb
       .from('wishlist')
       .select('user_email, user_id')
       .eq('product_id', productId);
 
-    if (error || !wishlistUsers || !wishlistUsers.length) {
-      console.log(`No wishlist users for product ${productId}`);
-      return;
-    }
+    // Wishlist table nahi hai ya koi user nahi — koi problem nahi, skip karo
+    if (wErr) { console.warn('wishlist fetch skipped:', wErr.message); return; }
+    if (!wishlistUsers || !wishlistUsers.length) return;
 
-    // notification_queue mein entries insert karo — Edge Function/cron email bhejega
+    // Step 2: notification_queue mein insert karo
+    const storeUrl = window.location.origin + '/index.html';
     const notifications = wishlistUsers
       .filter(w => w.user_email)
       .map(w => ({
@@ -1121,7 +1183,7 @@ async function triggerBackInStockNotification(productId, productName, imageUrl) 
         user_id:      w.user_id,
         product_id:   productId,
         product_name: productName,
-        product_url:  `${SUPABASE_URL.replace('supabase.co','')}/` || '#', // store URL — update this
+        product_url:  storeUrl,
         image_url:    imageUrl || null,
         type:         'back_in_stock',
         sent:         false,
@@ -1129,15 +1191,14 @@ async function triggerBackInStockNotification(productId, productName, imageUrl) 
       }));
 
     if (notifications.length > 0) {
-      const { error: insertErr } = await sb.from('notification_queue').insert(notifications);
-      if (insertErr) {
-        console.warn('notification_queue insert error:', insertErr.message);
-      } else {
-        console.log(`✅ ${notifications.length} back-in-stock notifications queued for "${productName}"`);
-      }
+      const { error: qErr } = await sb.from('notification_queue').insert(notifications);
+      // Table nahi bani yet — warning only, crash nahi
+      if (qErr) console.warn('notification_queue (create table first):', qErr.message);
+      else console.log(`✅ ${notifications.length} notifications queued for "${productName}"`);
     }
   } catch(e) {
-    console.warn('triggerBackInStockNotification error:', e.message);
+    // Koi bhi error — silently ignore, main app affect na ho
+    console.warn('triggerBackInStockNotification skipped:', e.message);
   }
 }
 
@@ -1418,7 +1479,15 @@ async function loadProducts(){
     const{data,error}=await sb.from('products').select('*').order('created_at',{ascending:false});
     if(error) throw error;
     allProducts=data||[];
-  }catch(e){showToast('Products load failed: '+e.message,'error');allProducts=[];}
+  }catch(e){
+    // "Failed to fetch" = network issue ya file:// se khola
+    if(e.message?.includes('fetch')){
+      showToast('⚠️ Network error. Open via HTTP server, not file://', 'error');
+    } else {
+      showToast('Products load failed: '+e.message,'error');
+    }
+    allProducts=[];
+  }
 }
 
 function renderDash(){
@@ -1726,7 +1795,41 @@ function closeSidebar() { document.getElementById('sidebar').classList.remove('o
 // ══════════════════════════════════════════
 let toastT;
 function showToast(msg,type='info'){const t=document.getElementById('toast');t.innerHTML=`<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-xmark':'fa-circle-info'}"></i><span>${msg}</span>`;t.className=type;t.style.display='flex';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',3500);}
-async function testConn(){const el=document.getElementById('connStatus');el.textContent='Testing...';try{const{error}=await sb.from('products').select('count').limit(1);if(error)throw error;el.innerHTML='<span style="color:#10b981;font-weight:700;">✅ Connected!</span>';}catch(e){el.innerHTML=`<span style="color:#ef4444;font-weight:700;">❌ Failed: ${e.message}</span>`;}}
+async function testConn(){
+  const el = document.getElementById('connStatus');
+  el.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+  let results = [];
+
+  // Test 1: Database
+  try {
+    const { error } = await sb.from('products').select('count').limit(1);
+    if (error) throw error;
+    results.push('✅ Database: Connected');
+  } catch(e) {
+    results.push('❌ Database: ' + e.message);
+  }
+
+  // Test 2: Storage — check if bucket accessible
+  try {
+    const { data, error } = await sb.storage.from(BUCKET).list('products', { limit: 1 });
+    if (error) throw error;
+    results.push('✅ Storage bucket: Accessible');
+  } catch(e) {
+    results.push('❌ Storage: ' + e.message + ' (Make bucket Public in Supabase → Storage)');
+  }
+
+  // Test 3: Auth
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    results.push(session ? '✅ Auth: Logged in as ' + session.user.email : '⚠️ Auth: No session');
+  } catch(e) {
+    results.push('❌ Auth: ' + e.message);
+  }
+
+  el.innerHTML = results.map(r =>
+    `<p style="margin:4px 0;font-size:12px;color:${r.startsWith('✅')?'#15803d':r.startsWith('⚠️')?'#b45309':'#dc2626'};">${r}</p>`
+  ).join('');
+}
 
 // ══════════════════════════════════════════
 // REALTIME ORDER NOTIFICATIONS
