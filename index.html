@@ -1036,17 +1036,14 @@ async function initAll() {
 // Realtime se sirf tab update hoga jab admin kuch change kare
 // ════════════════════════════════════════
 async function loadProducts() {
-  // Step 1: Cache check karo (IndexedDB — permanent)
+  // ✅ Always fetch fresh from Supabase — no cache-first (realtime sync)
+  // Show cached data instantly while fetching (if available)
   const cached = await cacheGet('ss_products');
   if (cached && cached.length > 0) {
-    // Cache mein hai → turant show karo (zero Supabase request)
     allProducts = cached;
     applyFilter(currentFilter);
-    return; // ✅ Supabase pe request nahi jaayegi
   }
 
-  // Step 2: Sirf tab Supabase se load karo jab cache empty ho
-  // (pehli baar ya realtime ne clear kiya ho)
   try {
     const { data, error } = await sb
       .from('products')
@@ -1057,9 +1054,8 @@ async function loadProducts() {
     if (error) throw error;
     allProducts = data || [];
 
-    // Permanent cache mein save karo
     await cacheSet('ss_products', allProducts);
-    applyFilter(currentFilter);
+    applyFilter(currentFilter); // Re-render with fresh data
 
   } catch(e) {
     if (!allProducts.length) {
@@ -1144,7 +1140,7 @@ function renderCurrentPage() {
       ? `<button onclick="event.stopPropagation();openProductModal(${p.id})" class="btn-solid py-2 px-4 text-sm">
            <i class="fa-solid fa-plus mr-1"></i>Add
          </button>`
-      : `<button onclick="event.stopPropagation();addToWishlist(${p.id})" class="wishlist-btn py-2 px-3 text-sm">
+      : `<button onclick="event.stopPropagation();openProductModal(${p.id})" class="wishlist-btn py-2 px-3 text-sm">
            <i class="fa-regular fa-heart mr-1"></i>Wishlist
          </button>`;
 
@@ -1213,15 +1209,18 @@ function loadMore() {
 // Sirf 1 baar Supabase se, phir IndexedDB se
 // ════════════════════════════════════════
 async function loadSections() {
-  let map = await cacheGet('ss_sections');
-  if (!map) {
-    try {
-      const { data } = await sb.from('site_sections').select('*');
-      map = {};
-      (data||[]).forEach(s => map[s.section_key] = s);
-      await cacheSet('ss_sections', map);
-    } catch(e) { map = {}; }
+  // ✅ Always fetch fresh from Supabase
+  let map = await cacheGet('ss_sections') || {};
+  // Show cached immediately
+  if (Object.keys(map).length) {
+    window._sectionMap = map;
   }
+  try {
+    const { data } = await sb.from('site_sections').select('*');
+    map = {};
+    (data||[]).forEach(s => map[s.section_key] = s);
+    await cacheSet('ss_sections', map);
+  } catch(e) { if (!Object.keys(map).length) map = {}; }
   window._sectionMap = map;
   if (map.hero?.image_url) {
     document.getElementById('hero').style.backgroundImage = `url('${map.hero.image_url}')`;
@@ -1259,14 +1258,16 @@ function renderCategoryCards(map) {
 // ════════════════════════════════════════
 // ✅ Gallery — permanent cache
 async function loadGallery() {
+  // ✅ Always fetch fresh from Supabase
   const g = document.getElementById('galleryGrid');
-  let data = await cacheGet('ss_gallery');
-  if (!data) {
-    try {
-      const res = await sb.from('gallery_images').select('*').eq('is_active',true).order('position');
-      data = res.data || [];
-      await cacheSet('ss_gallery', data);
-    } catch(e) { data = []; }
+  let data = [];
+  try {
+    const res = await sb.from('gallery_images').select('*').eq('is_active',true).order('position');
+    data = res.data || [];
+    await cacheSet('ss_gallery', data);
+  } catch(e) {
+    // Fallback to cache on error
+    data = await cacheGet('ss_gallery') || [];
   }
   if (!data.length) { g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><i class="fa-solid fa-images" style="font-size:36px;display:block;margin-bottom:10px;"></i><p>Gallery images coming soon!</p></div>`; return; }
   g.innerHTML = data.map((img,i) => `
@@ -1280,14 +1281,15 @@ async function loadGallery() {
 
 // ✅ Instagram — permanent cache
 async function loadInstagram() {
+  // ✅ Always fetch fresh from Supabase
   const g = document.getElementById('instaGrid');
-  let data = await cacheGet('ss_insta');
-  if (!data) {
-    try {
-      const res = await sb.from('instagram_images').select('*').eq('is_active',true).order('position');
-      data = res.data || [];
-      await cacheSet('ss_insta', data);
-    } catch(e) { data = []; }
+  let data = [];
+  try {
+    const res = await sb.from('instagram_images').select('*').eq('is_active',true).order('position');
+    data = res.data || [];
+    await cacheSet('ss_insta', data);
+  } catch(e) {
+    data = await cacheGet('ss_insta') || [];
   }
   if (!data.length) { g.innerHTML=`<div class="empty-state col-span-4"><i class="fa-brands fa-instagram text-accent"></i><p>Instagram images coming soon!</p></div>`; return; }
   g.innerHTML = data.map((img,i) => `
@@ -1364,10 +1366,20 @@ function updateModalWishlistBtn(productId) {
   }
 }
 
-// ✅ Modal se wishlist add/remove (sirf out-of-stock products ke liye)
+// ✅ Modal se wishlist add/remove — pehle size select karo (Add to Cart jesi flow)
 function addToWishlistFromModal() {
   if (!currentProduct) return;
-  // Directly wishlist mein save karo (modal se call hota hai, stock=0 case)
+
+  // ✅ Size validation — same as addToCartFromModal
+  if (!selectedSize) {
+    showToast('Please select a size first!', 'error');
+    document.querySelectorAll('.size-btn').forEach(b => {
+      b.style.outline = '2px solid #e94560';
+      setTimeout(() => b.style.outline = '', 800);
+    });
+    return;
+  }
+
   const wishlist = getWishlist();
   const userId   = currentUser?.id || 'guest';
   const key      = `${userId}_${currentProduct.id}`;
@@ -1379,8 +1391,19 @@ function addToWishlistFromModal() {
     wishlist.push(key);
     saveWishlist(wishlist);
     showToast(`❤️ Added to wishlist! We'll notify you when back in stock.`, 'success');
+
+    // ✅ Supabase mein bhi save karo agar logged in
+    if (currentUser) {
+      sb.from('wishlist').upsert([{
+        user_id:      currentUser.id,
+        user_email:   currentUser.email,
+        product_id:   currentProduct.id,
+        product_name: currentProduct.name,
+      }], { onConflict: 'user_id,product_id' }).then(() => {});
+    }
   }
   updateModalWishlistBtn(currentProduct.id);
+  updateWishlistBadge();
 }
 function closeProductModal(e) { if(!e||e.target===document.getElementById('productModal')){document.getElementById('productModal').classList.remove('open');document.body.style.overflow='';} }
 function switchThumb(el,src){document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('modalMainImg').src=src;}
