@@ -1984,7 +1984,12 @@ function setupAllRealtime() {
         }
       } catch(e) {}
     })
-    .subscribe();
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        console.warn('rt-products channel error:', status, '— reconnecting...');
+        setTimeout(() => { sb.removeAllChannels(); setupAllRealtime(); }, 3000);
+      }
+    });
 
   // 2. SITE SECTIONS — Hero/Story/Category/Premium image change
   sb.channel('rt-sections')
@@ -2065,6 +2070,54 @@ function setupAllRealtime() {
 }
 
 // ════════════════════════════════════════
+// ✅ REALTIME HEALTH MONITOR
+// Agar channel drop ho jaye → auto-reconnect
+// ════════════════════════════════════════
+function monitorRealtimeHealth() {
+  const CHANNELS = ['rt-products','rt-sections','rt-gallery','rt-instagram'];
+  setInterval(() => {
+    const activeChannels = sb.getChannels().map(c => c.topic);
+    const allActive = CHANNELS.every(name =>
+      activeChannels.some(t => t.includes(name))
+    );
+    if (!allActive) {
+      // Koi channel gira — sab remove karo aur dobara setup karo
+      sb.removeAllChannels();
+      setTimeout(setupAllRealtime, 1000);
+    }
+  }, 30000); // Har 30 seconds check
+}
+
+// ════════════════════════════════════════
+// ✅ VISIBILITY REFRESH
+// User tab switch karke wapas aaye → stale data refresh
+// (Mobile pe especially zaroori — background mein connection cut jata hai)
+// ════════════════════════════════════════
+let _lastVisible = Date.now();
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible') {
+    const away = Date.now() - _lastVisible;
+    // 2+ minute baad wapas aaya → fresh data lo silently
+    if (away > 2 * 60 * 1000) {
+      try {
+        const { data } = await sb.from('products').select('*')
+          .eq('is_active', true).order('created_at', { ascending: false });
+        if (data) {
+          allProducts = data;
+          await cacheSet('ss_products', data);
+          applyFilter(currentFilter);
+        }
+      } catch(e) {}
+      // Realtime channels bhi re-check karo
+      sb.removeAllChannels();
+      setTimeout(setupAllRealtime, 500);
+    }
+  } else {
+    _lastVisible = Date.now();
+  }
+});
+
+// ════════════════════════════════════════
 // START
 // ════════════════════════════════════════
 updateBadge();
@@ -2073,6 +2126,7 @@ startCountdown();
 observeFadeUp();
 initAll();
 setupAllRealtime(); // ✅ Sab kuch realtime
+monitorRealtimeHealth(); // ✅ Channel drop pe auto-reconnect
 
 </script>
 </body>
