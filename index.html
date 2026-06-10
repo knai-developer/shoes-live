@@ -1738,7 +1738,7 @@ function renderCartItems(){
   const el=document.getElementById('cartItems');
   if(!cart.length){el.innerHTML=`<div class="text-center text-gray-400 py-16"><i class="fa-solid fa-bag-shopping text-4xl mb-4 block"></i><p class="font-semibold">Your cart is empty</p></div>`;document.getElementById('cartTotal').textContent='PKR 0';return;}
   el.innerHTML=cart.map(item=>`<div class="flex gap-4 items-start p-4 bg-gray-50 rounded-xl"><img src="${item.img||'https://placehold.co/64x64/1a1a2e/fff?text=Shoe'}" class="w-16 h-16 rounded-xl object-cover" onerror="this.src='https://placehold.co/64x64/1a1a2e/fff?text=Shoe'" loading="lazy"/><div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${item.name}</p><p class="text-xs text-gray-500 mt-1">Size: ${item.size}</p><p class="text-accent font-bold mt-1">PKR ${(item.price*item.qty).toLocaleString()}</p><div class="flex items-center gap-3 mt-2"><button onclick="cQty('${item.key}',-1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">−</button><span class="font-semibold text-sm">${item.qty}</span><button onclick="cQty('${item.key}',1)" class="w-7 h-7 rounded-full border border-gray-300 text-sm font-bold flex items-center justify-center">+</button></div></div><button onclick="rmItem('${item.key}')" class="text-gray-400 hover:text-red-500 mt-1"><i class="fa-solid fa-trash text-sm"></i></button></div>`).join('');
-  const SHIPPING_FEE = 500;
+  const SHIPPING_FEE = 200;
   const subtotal = cart.reduce((s,i)=>s+i.price*i.qty,0);
   const grandTotal = subtotal + SHIPPING_FEE;
   document.getElementById('cartSubtotal').textContent=`PKR ${subtotal.toLocaleString()}`;
